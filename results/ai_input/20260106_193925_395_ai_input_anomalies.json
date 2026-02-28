@@ -1,0 +1,37 @@
+{
+  "image_name": "20260106_193925_395_ai_input",
+  "anomalies": [
+    {
+      "id": 0,
+      "direction": "horizontal",
+      "coor1": {
+        "x": 300,
+        "y": 532
+      },
+      "coor2": {
+        "x": 800,
+        "y": 660
+      },
+      "reconstructed_circle": {
+        "center": {
+          "x": 550,
+          "y": 596
+        },
+        "radius": 100.0
+      },
+      "confidence": "very_low",
+      "type": "default_region",
+      "warning": "未检测到任何青色区域，此为具备 2D 面积的默认输出",
+      "debug_pad_reference": {
+        "pad_center": {
+          "x": 840,
+          "y": 237
+        },
+        "anomaly_center": {
+          "x": 550,
+          "y": 596
+        }
+      }
+    }
+  ]
+}

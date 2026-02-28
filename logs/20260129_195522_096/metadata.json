@@ -1,0 +1,49 @@
+{
+  "timestamp": "20260129_195522_096",
+  "datetime": "2026-01-29 19:55:22",
+  "cyan_center": [
+    939,
+    489
+  ],
+  "red_center": [
+    368,
+    269
+  ],
+  "capture_region": {
+    "x": 218,
+    "y": 0,
+    "w": 1080,
+    "h": 1080
+  },
+  "ai_result": {
+    "lines": [
+      {
+        "start": [
+          328,
+          728
+        ],
+        "end": [
+          828,
+          728
+        ]
+      }
+    ],
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 328,
+          "y": 728
+        },
+        "coor2": {
+          "x": 828,
+          "y": 728
+        },
+        "confidence": "very_low",
+        "type": "default_region",
+        "warning": "未检测到任何蓝色区域，此为默认输出"
+      }
+    ]
+  }
+}

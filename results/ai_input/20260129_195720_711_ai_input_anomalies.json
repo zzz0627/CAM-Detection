@@ -1,0 +1,27 @@
+{
+  "image_name": "20260129_195720_711_ai_input",
+  "anomalies": [
+    {
+      "id": 0,
+      "direction": "horizontal",
+      "coor1": {
+        "x": 598,
+        "y": 421
+      },
+      "coor2": {
+        "x": 726,
+        "y": 470
+      },
+      "reconstructed_circle": {
+        "center": {
+          "x": 662,
+          "y": 444
+        },
+        "radius": 25.47
+      },
+      "confidence": "high",
+      "type": "normal",
+      "debug_pad_reference": null
+    }
+  ]
+}

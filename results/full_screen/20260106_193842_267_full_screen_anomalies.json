@@ -1,0 +1,27 @@
+{
+  "image_name": "20260106_193842_267_full_screen",
+  "anomalies": [
+    {
+      "id": 0,
+      "direction": "horizontal",
+      "coor1": {
+        "x": 863,
+        "y": 457
+      },
+      "coor2": {
+        "x": 1001,
+        "y": 509
+      },
+      "reconstructed_circle": {
+        "center": {
+          "x": 932,
+          "y": 480
+        },
+        "radius": 27.58
+      },
+      "confidence": "high",
+      "type": "normal",
+      "debug_pad_reference": null
+    }
+  ]
+}

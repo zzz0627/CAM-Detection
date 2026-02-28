@@ -1,0 +1,1495 @@
+[
+  {
+    "image_name": "20260106_193554_595_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 881,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 948,
+            "y": 474
+          },
+          "radius": 26.73
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193608_093_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 878,
+          "y": 456
+        },
+        "coor2": {
+          "x": 1014,
+          "y": 507
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 946,
+            "y": 480
+          },
+          "radius": 26.88
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193616_969_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 870,
+          "y": 474
+        },
+        "coor2": {
+          "x": 1008,
+          "y": 509
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 939,
+            "y": 482
+          },
+          "radius": 27.23
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193625_460_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 881,
+          "y": 440
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 493
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 948,
+            "y": 468
+          },
+          "radius": 26.5
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193634_211_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 864,
+          "y": 445
+        },
+        "coor2": {
+          "x": 998,
+          "y": 505
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 931,
+            "y": 475
+          },
+          "radius": 26.68
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193642_556_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 875,
+          "y": 466
+        },
+        "coor2": {
+          "x": 1011,
+          "y": 509
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 943,
+            "y": 482
+          },
+          "radius": 27.12
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193651_426_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 877,
+          "y": 456
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 508
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 946,
+            "y": 480
+          },
+          "radius": 27.25
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193700_286_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 875,
+          "y": 438
+        },
+        "coor2": {
+          "x": 1013,
+          "y": 482
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 944,
+            "y": 465
+          },
+          "radius": 27.29
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193709_051_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 867,
+          "y": 464
+        },
+        "coor2": {
+          "x": 1005,
+          "y": 509
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 936,
+            "y": 482
+          },
+          "radius": 27.5
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193717_874_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 873,
+          "y": 437
+        },
+        "coor2": {
+          "x": 1007,
+          "y": 470
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 940,
+            "y": 464
+          },
+          "radius": 26.62
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193726_712_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 875,
+          "y": 438
+        },
+        "coor2": {
+          "x": 967,
+          "y": 472
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 921,
+            "y": 455
+          },
+          "radius": 18.38
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193735_250_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 875,
+          "y": 467
+        },
+        "coor2": {
+          "x": 1011,
+          "y": 510
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 943,
+            "y": 482
+          },
+          "radius": 27.12
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193743_752_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 861,
+          "y": 449
+        },
+        "coor2": {
+          "x": 999,
+          "y": 507
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 930,
+            "y": 478
+          },
+          "radius": 27.54
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193752_554_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 882,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1016,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 949,
+            "y": 474
+          },
+          "radius": 26.67
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193801_183_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 863,
+          "y": 457
+        },
+        "coor2": {
+          "x": 1001,
+          "y": 508
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 932,
+            "y": 480
+          },
+          "radius": 27.24
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193809_928_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 883,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1017,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 950,
+            "y": 474
+          },
+          "radius": 26.67
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193833_448_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 883,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1017,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 950,
+            "y": 474
+          },
+          "radius": 26.73
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193842_267_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 863,
+          "y": 457
+        },
+        "coor2": {
+          "x": 1001,
+          "y": 509
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 932,
+            "y": 480
+          },
+          "radius": 27.58
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193850_801_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 861,
+          "y": 439
+        },
+        "coor2": {
+          "x": 997,
+          "y": 495
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 929,
+            "y": 468
+          },
+          "radius": 26.86
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193859_609_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 862,
+          "y": 451
+        },
+        "coor2": {
+          "x": 990,
+          "y": 506
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 926,
+            "y": 478
+          },
+          "radius": 25.54
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193907_991_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 883,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1017,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 950,
+            "y": 474
+          },
+          "radius": 26.67
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193916_663_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 886,
+          "y": 440
+        },
+        "coor2": {
+          "x": 1020,
+          "y": 498
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 953,
+            "y": 469
+          },
+          "radius": 26.57
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193925_395_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 936,
+          "y": 516
+        },
+        "coor2": {
+          "x": 976,
+          "y": 538
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 956,
+            "y": 527
+          },
+          "radius": 7.81
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193933_939_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 862,
+          "y": 458
+        },
+        "coor2": {
+          "x": 1000,
+          "y": 509
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 931,
+            "y": 482
+          },
+          "radius": 27.24
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193942_433_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 862,
+          "y": 457
+        },
+        "coor2": {
+          "x": 1000,
+          "y": 510
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 931,
+            "y": 482
+          },
+          "radius": 27.28
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_193951_222_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 862,
+          "y": 461
+        },
+        "coor2": {
+          "x": 998,
+          "y": 510
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 930,
+            "y": 482
+          },
+          "radius": 26.95
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_194000_007_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 934,
+          "y": 516
+        },
+        "coor2": {
+          "x": 978,
+          "y": 538
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 956,
+            "y": 527
+          },
+          "radius": 8.49
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_194008_619_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 862,
+          "y": 459
+        },
+        "coor2": {
+          "x": 998,
+          "y": 510
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 930,
+            "y": 482
+          },
+          "radius": 26.88
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_194017_360_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 873,
+          "y": 434
+        },
+        "coor2": {
+          "x": 1007,
+          "y": 467
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 940,
+            "y": 460
+          },
+          "radius": 26.62
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_194025_804_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 873,
+          "y": 434
+        },
+        "coor2": {
+          "x": 1007,
+          "y": 467
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 940,
+            "y": 460
+          },
+          "radius": 26.62
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_194034_596_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 860,
+          "y": 436
+        },
+        "coor2": {
+          "x": 996,
+          "y": 486
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 928,
+            "y": 462
+          },
+          "radius": 26.88
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260106_194043_351_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 859,
+          "y": 443
+        },
+        "coor2": {
+          "x": 993,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 926,
+            "y": 474
+          },
+          "radius": 26.62
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_184408_124_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 866,
+          "y": 441
+        },
+        "coor2": {
+          "x": 1014,
+          "y": 506
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 940,
+            "y": 474
+          },
+          "radius": 29.54
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_184424_473_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 881,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 948,
+            "y": 474
+          },
+          "radius": 26.62
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_184552_735_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 881,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 948,
+            "y": 474
+          },
+          "radius": 26.62
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_184602_245_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 866,
+          "y": 439
+        },
+        "coor2": {
+          "x": 1004,
+          "y": 488
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 935,
+            "y": 468
+          },
+          "radius": 27.5
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_184611_717_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 873,
+          "y": 474
+        },
+        "coor2": {
+          "x": 1007,
+          "y": 508
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 940,
+            "y": 481
+          },
+          "radius": 26.67
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195428_126_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 868,
+          "y": 442
+        },
+        "coor2": {
+          "x": 1012,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 940,
+            "y": 473
+          },
+          "radius": 28.43
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195437_624_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 0,
+          "y": 68
+        },
+        "coor2": {
+          "x": 1919,
+          "y": 80
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 1180,
+            "y": 74
+          },
+          "radius": 666.5
+        },
+        "confidence": "low",
+        "type": "fallback",
+        "debug_info": {
+          "area": 4993,
+          "pad_distance": 0.0,
+          "structure_distance_ratio": "inf",
+          "filter_reasons": [
+            "aspect_ratio(266.80)"
+          ]
+        },
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195447_060_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 866,
+          "y": 441
+        },
+        "coor2": {
+          "x": 1014,
+          "y": 506
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 940,
+            "y": 474
+          },
+          "radius": 29.54
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195459_810_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 881,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 948,
+            "y": 474
+          },
+          "radius": 26.62
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195509_401_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 900,
+          "y": 439
+        },
+        "coor2": {
+          "x": 982,
+          "y": 472
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 941,
+            "y": 452
+          },
+          "radius": 16.17
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195522_096_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 873,
+          "y": 474
+        },
+        "coor2": {
+          "x": 1007,
+          "y": 508
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 940,
+            "y": 481
+          },
+          "radius": 26.67
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195531_613_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 866,
+          "y": 456
+        },
+        "coor2": {
+          "x": 1002,
+          "y": 507
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 934,
+            "y": 480
+          },
+          "radius": 26.88
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195545_861_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 878,
+          "y": 451
+        },
+        "coor2": {
+          "x": 1014,
+          "y": 506
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 946,
+            "y": 478
+          },
+          "radius": 27.04
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195613_616_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 881,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 948,
+            "y": 474
+          },
+          "radius": 26.73
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195720_711_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 864,
+          "y": 456
+        },
+        "coor2": {
+          "x": 1002,
+          "y": 507
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 933,
+            "y": 480
+          },
+          "radius": 27.24
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195734_941_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 881,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 948,
+            "y": 474
+          },
+          "radius": 26.67
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195745_830_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 881,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 948,
+            "y": 474
+          },
+          "radius": 26.67
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195814_647_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 863,
+          "y": 443
+        },
+        "coor2": {
+          "x": 997,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 930,
+            "y": 474
+          },
+          "radius": 26.62
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195824_151_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 863,
+          "y": 443
+        },
+        "coor2": {
+          "x": 997,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 930,
+            "y": 474
+          },
+          "radius": 26.62
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195833_691_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 881,
+          "y": 443
+        },
+        "coor2": {
+          "x": 1015,
+          "y": 504
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 948,
+            "y": 474
+          },
+          "radius": 26.73
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195847_028_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 935,
+          "y": 516
+        },
+        "coor2": {
+          "x": 977,
+          "y": 538
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 956,
+            "y": 527
+          },
+          "radius": 8.06
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195856_656_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 870,
+          "y": 474
+        },
+        "coor2": {
+          "x": 1008,
+          "y": 509
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 939,
+            "y": 482
+          },
+          "radius": 27.23
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  },
+  {
+    "image_name": "20260129_195907_558_full_screen",
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 936,
+          "y": 517
+        },
+        "coor2": {
+          "x": 976,
+          "y": 537
+        },
+        "reconstructed_circle": {
+          "center": {
+            "x": 956,
+            "y": 527
+          },
+          "radius": 7.81
+        },
+        "confidence": "high",
+        "type": "normal",
+        "debug_pad_reference": null
+      }
+    ]
+  }
+]

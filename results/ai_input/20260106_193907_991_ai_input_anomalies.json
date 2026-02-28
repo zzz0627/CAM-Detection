@@ -1,0 +1,35 @@
+{
+  "image_name": "20260106_193907_991_ai_input",
+  "anomalies": [
+    {
+      "id": 0,
+      "direction": "horizontal",
+      "coor1": {
+        "x": 0,
+        "y": 62
+      },
+      "coor2": {
+        "x": 999,
+        "y": 74
+      },
+      "reconstructed_circle": {
+        "center": {
+          "x": 517,
+          "y": 68
+        },
+        "radius": 416.0
+      },
+      "confidence": "low",
+      "type": "fallback",
+      "debug_info": {
+        "area": 3328,
+        "pad_distance": 0.0,
+        "structure_distance_ratio": "inf",
+        "filter_reasons": [
+          "aspect_ratio(166.60)"
+        ]
+      },
+      "debug_pad_reference": null
+    }
+  ]
+}

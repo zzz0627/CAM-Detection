@@ -1,922 +1,1008 @@
+import argparse
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+
 import cv2
 import numpy as np
-import os
-import json
-from pathlib import Path
-import argparse
 
-def detect_interface_regions(img):
-    """检测并标记软件界面区域，用于后续过滤"""
+
+DEBUG_MODE = False
+
+
+@dataclass(frozen=True)
+class DetectorConfig:
+    """集中管理视觉检测参数，避免逻辑中散落硬编码。"""
+
+    interface_edge_ratio: float = 0.05
+    interface_canny_low: int = 50
+    interface_canny_high: int = 150
+    interface_min_area_pixels: int = 100
+    interface_max_area_ratio: float = 0.25
+    interface_aspect_min: float = 0.2
+    interface_aspect_max: float = 5.0
+
+    roi_border_ratio: float = 1.0 / 15.0
+    roi_texture_threshold: int = 30
+    roi_kernel_size: int = 15
+    roi_dilate_iterations: int = 2
+
+    structure_canny_low: int = 50
+    structure_canny_high: int = 150
+    structure_close_kernel_size: int = 3
+    structure_close_iterations: int = 2
+    structure_min_area_ratio: float = 0.005
+    structure_max_area_ratio: float = 0.10
+    structure_min_radius_ratio: float = 1.0 / 30.0
+    structure_max_radius_ratio: float = 0.20
+    structure_min_circularity: float = 0.30
+
+    red_hsv_ranges: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...] = field(
+        default_factory=lambda: (
+            ((0, 43, 46), (10, 255, 255)),
+            ((156, 43, 46), (180, 255, 255)),
+        )
+    )
+    cyan_hsv_ranges: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...] = field(
+        default_factory=lambda: (
+            ((78, 50, 50), (98, 255, 255)),
+            ((90, 40, 40), (110, 255, 255)),
+        )
+    )
+
+    pad_close_kernel_size: int = 5
+    pad_component_probe_radius_scale: float = 1.6
+    pad_soft_dilate_kernel_size: int = 25
+    pad_soft_dilate_iterations: int = 1
+
+    cyan_open_kernel_size: int = 3
+    cyan_close_kernel_size: int = 5
+    cyan_open_iterations: int = 1
+    cyan_close_iterations: int = 1
+    separation_min_distance: int = 5
+
+    contour_min_area_pixels: int = 40
+    contour_min_area_ratio: float = 0.00005
+    contour_max_area_ratio: float = 0.15
+    contour_aspect_min: float = 0.08
+    contour_aspect_max: float = 12.0
+    min_reconstructed_radius_pixels: float = 3.0
+
+    pad_affinity_radius_ratio: float = 0.90
+    pad_affinity_min_pixels: float = 8.0
+    structure_near_ratio: float = 1.2
+
+    operation_box_expand_ratio: float = 2.5
+    operation_box_padding_pixels: int = 4
+    minimum_box_side_pixels: int = 4
+
+    fallback_width_ratio: float = 0.20
+    fallback_height_ratio: float = 0.12
+    fallback_min_side_pixels: int = 24
+
+    debug_reconstructed_circle_color: tuple[int, int, int] = (0, 255, 255)
+    debug_operation_box_color: tuple[int, int, int] = (0, 0, 255)
+    debug_selected_contour_color: tuple[int, int, int] = (0, 255, 0)
+    debug_fallback_color: tuple[int, int, int] = (0, 165, 255)
+
+
+CONFIG = DetectorConfig()
+
+
+def build_kernel(size: int) -> np.ndarray:
+    kernel_size = max(1, int(size))
+    return np.ones((kernel_size, kernel_size), dtype=np.uint8)
+
+
+def build_hsv_mask(hsv_img: np.ndarray, ranges) -> np.ndarray:
+    mask = np.zeros(hsv_img.shape[:2], dtype=np.uint8)
+    for lower, upper in ranges:
+        lower_arr = np.array(lower, dtype=np.uint8)
+        upper_arr = np.array(upper, dtype=np.uint8)
+        mask = cv2.bitwise_or(mask, cv2.inRange(hsv_img, lower_arr, upper_arr))
+    return mask
+
+
+def detect_interface_regions(img: np.ndarray, config: DetectorConfig) -> np.ndarray:
+    """检测并标记软件界面区域，用于后续过滤。"""
     h, w = img.shape[:2]
     interface_mask = np.zeros((h, w), dtype=np.uint8)
-    
-    # 界面通常分布在边缘区域，标记边界带
-    edge_thickness = min(w, h) // 20
+
+    edge_thickness = max(1, int(min(w, h) * config.interface_edge_ratio))
     interface_mask[:, :edge_thickness] = 255
-    interface_mask[:, w-edge_thickness:] = 255
+    interface_mask[:, w - edge_thickness :] = 255
     interface_mask[:edge_thickness, :] = 255
-    interface_mask[h-edge_thickness:, :] = 255
-    
-    # 基于边缘检测识别工具栏等规则矩形结构
+    interface_mask[h - edge_thickness :, :] = 255
+
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 50, 150)
+    edges = cv2.Canny(gray, config.interface_canny_low, config.interface_canny_high)
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
+
     for contour in contours:
         x, y, w_box, h_box = cv2.boundingRect(contour)
         area = w_box * h_box
-        aspect_ratio = w_box / h_box if h_box > 0 else 0
-        
-        # 界面元素特征：边缘位置 + 规则矩形 + 适中面积
-        is_edge_element = (x < edge_thickness or x + w_box > w - edge_thickness or 
-                          y < edge_thickness or y + h_box > h - edge_thickness)
-        is_regular_shape = 0.2 < aspect_ratio < 5.0
-        is_moderate_size = 100 < area < (w * h) // 4
-        
+        aspect_ratio = w_box / h_box if h_box > 0 else 0.0
+
+        is_edge_element = (
+            x < edge_thickness
+            or x + w_box > w - edge_thickness
+            or y < edge_thickness
+            or y + h_box > h - edge_thickness
+        )
+        is_regular_shape = config.interface_aspect_min < aspect_ratio < config.interface_aspect_max
+        is_moderate_size = config.interface_min_area_pixels < area < int(w * h * config.interface_max_area_ratio)
+
         if is_edge_element and is_regular_shape and is_moderate_size:
             cv2.fillPoly(interface_mask, [contour], 255)
-    
+
     return interface_mask
 
-def detect_image_content_roi(img):
-    """提取图像主要内容区域（ROI），排除边缘界面干扰"""
+
+def detect_image_content_roi(img: np.ndarray, config: DetectorConfig) -> np.ndarray:
+    """提取图像主要内容区域（ROI），排除边缘界面干扰。"""
     h, w = img.shape[:2]
-    
-    # 初始化全图ROI并剔除边框
     roi_mask = np.ones((h, w), dtype=np.uint8) * 255
-    border_size = min(w, h) // 15
+    border_size = max(1, int(min(w, h) * config.roi_border_ratio))
+
     roi_mask[:border_size, :] = 0
-    roi_mask[h-border_size:, :] = 0
+    roi_mask[h - border_size :, :] = 0
     roi_mask[:, :border_size] = 0
-    roi_mask[:, w-border_size:] = 0
-    
-    # Sobel算子检测纹理梯度，定位主要内容区域
+    roi_mask[:, w - border_size :] = 0
+
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
     sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
     sobel_magnitude = np.sqrt(sobelx**2 + sobely**2)
     sobel_magnitude = cv2.normalize(sobel_magnitude, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-    
-    # 阈值分割纹理丰富区域
-    _, texture_mask = cv2.threshold(sobel_magnitude, 30, 255, cv2.THRESH_BINARY)
-    
-    # 形态学闭运算连接碎片化纹理
-    kernel = np.ones((15, 15), np.uint8)
+
+    _, texture_mask = cv2.threshold(
+        sobel_magnitude, config.roi_texture_threshold, 255, cv2.THRESH_BINARY
+    )
+
+    kernel = build_kernel(config.roi_kernel_size)
     texture_mask = cv2.morphologyEx(texture_mask, cv2.MORPH_CLOSE, kernel)
-    texture_mask = cv2.morphologyEx(texture_mask, cv2.MORPH_DILATE, kernel, iterations=2)
-    
-    # 提取最大连通域作为主内容区
+    texture_mask = cv2.dilate(texture_mask, kernel, iterations=config.roi_dilate_iterations)
+
     contours, _ = cv2.findContours(texture_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
         content_mask = np.zeros((h, w), dtype=np.uint8)
         cv2.fillPoly(content_mask, [largest_contour], 255)
         roi_mask = cv2.bitwise_and(roi_mask, content_mask)
-    
+
     return roi_mask
 
-def separate_merged_regions(blue_mask, min_separation_distance=5):
-    """使用分水岭算法分离粘连的蓝色区域"""
-    try:
-        from scipy import ndimage
-        from skimage.segmentation import watershed
-        from skimage.feature import peak_local_maxima
-        
-        dist_transform = cv2.distanceTransform(blue_mask, cv2.DIST_L2, 5)
-        
-        # 提取局部极大值作为分水岭种子点
-        local_maxima = peak_local_maxima(dist_transform, 
-                                       min_distance=min_separation_distance,
-                                       threshold_abs=0.3 * dist_transform.max(),
-                                       indices=False)
-        
-        if np.sum(local_maxima) <= 1:
-            return blue_mask
-        
-        markers = ndimage.label(local_maxima)[0]
-        labels = watershed(-dist_transform, markers, mask=blue_mask)
-        separated_mask = (labels > 0).astype(np.uint8) * 255
-        
-        return separated_mask
-        
-    except ImportError:
-        return separate_regions_simple(blue_mask, min_separation_distance)
 
-def detect_large_circular_structures(img):
-    """基于边缘检测识别焊盘、过孔等大型圆形PCB结构"""
-    h, w = img.shape[:2]
-    
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 50, 150)
-    
-    # 闭运算连接断裂边缘
-    kernel = np.ones((3, 3), np.uint8)
-    edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
-    
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    circular_contours = []
-    circular_centers = []
-    
-    # 焊盘级结构的合理面积范围：0.5% ~ 10%
-    min_structure_area = (w * h) // 200
-    max_structure_area = (w * h) // 10
-    
-    for contour in contours:
-        area = cv2.contourArea(contour)
-        
-        if not (min_structure_area <= area <= max_structure_area):
-            continue
-        
-        (cx, cy), radius = cv2.minEnclosingCircle(contour)
-        
-        # 半径范围：3.3% ~ 20% 图像尺寸
-        min_radius = min(w, h) / 30
-        max_radius = min(w, h) / 5
-        
-        if not (min_radius <= radius <= max_radius):
-            continue
-        
-        circle_area = np.pi * radius * radius
-        circularity = area / circle_area if circle_area > 0 else 0
-        
-        # 圆形度阈值 > 0.3 即可接受
-        if circularity > 0.3:
-            circular_contours.append(contour)
-            circular_centers.append((int(cx), int(cy), radius))
-    
-    return circular_contours, circular_centers
+def separate_regions_simple(blue_mask: np.ndarray, min_separation_distance: int) -> np.ndarray:
+    """简化版区域分离，基于形态学操作和连通域分析。"""
+    if np.count_nonzero(blue_mask) == 0:
+        return blue_mask
 
-def is_anomaly_near_structure(anomaly_contour, circular_centers, img_shape):
-    """计算异常区域到最近焊盘结构的距离比例，判定是否相邻"""
-    if len(circular_centers) == 0:
-        return False, float('inf')
-    
-    M = cv2.moments(anomaly_contour)
-    if M["m00"] == 0:
-        return False, float('inf')
-    
-    anomaly_cx = int(M["m10"] / M["m00"])
-    anomaly_cy = int(M["m01"] / M["m00"])
-    
-    min_distance_ratio = float('inf')
-    
-    for cx, cy, radius in circular_centers:
-        distance = np.sqrt((anomaly_cx - cx)**2 + (anomaly_cy - cy)**2)
-        distance_ratio = distance / radius if radius > 0 else float('inf')
-        min_distance_ratio = min(min_distance_ratio, distance_ratio)
-    
-    # 距离比例 < 1.2 视为相邻或重叠
-    is_near = min_distance_ratio < 1.2
-    
-    return is_near, min_distance_ratio
-
-def is_anomaly_on_pad(anomaly_contour, pad_mask):
-    """计算异常区域与焊盘的重叠比例，判定是否位于焊盘上"""
-    h, w = pad_mask.shape[:2]
-    
-    anomaly_mask = np.zeros((h, w), dtype=np.uint8)
-    cv2.fillPoly(anomaly_mask, [anomaly_contour], 255)
-    
-    overlap = cv2.bitwise_and(anomaly_mask, pad_mask)
-    overlap_area = np.sum(overlap > 0)
-    anomaly_area = np.sum(anomaly_mask > 0)
-    overlap_ratio = overlap_area / anomaly_area if anomaly_area > 0 else 0
-    
-    # 重叠超过50%即判定为焊盘异常
-    return overlap_ratio > 0.5, overlap_ratio
-
-def find_nearest_pad_center(anomaly_contour, circular_centers):
-    """找到距离异常区域最近的焊盘中心"""
-    if not circular_centers:
-        return None
-    
-    M = cv2.moments(anomaly_contour)
-    if M["m00"] == 0:
-        return None
-    
-    anomaly_cx = int(M["m10"] / M["m00"])
-    anomaly_cy = int(M["m01"] / M["m00"])
-    
-    min_distance = float('inf')
-    nearest_center = None
-    
-    for cx, cy, radius in circular_centers:
-        distance = np.sqrt((anomaly_cx - cx)**2 + (anomaly_cy - cy)**2)
-        if distance < min_distance:
-            min_distance = distance
-            nearest_center = (cx, cy)
-    
-    return nearest_center
-
-def determine_anomaly_direction(anomaly_contour, pad_center):
-    """判断异常相对于焊盘的方向（横向/纵向）"""
-    if pad_center is None:
-        return 'horizontal'  # 无焊盘时默认横向
-    
-    M = cv2.moments(anomaly_contour)
-    if M["m00"] == 0:
-        return 'horizontal'
-    
-    anomaly_cx = int(M["m10"] / M["m00"])
-    anomaly_cy = int(M["m01"] / M["m00"])
-    
-    pad_cx, pad_cy = pad_center
-    dx = anomaly_cx - pad_cx  # 保留符号
-    dy = anomaly_cy - pad_cy  # 保留符号
-    
-    # 使用角度判断更鲁棒
-    # atan2 返回 [-π, π]，转换为角度 [-180, 180]
-    angle_deg = np.degrees(np.arctan2(dy, dx))
-    
-    # 角度分区（以焊盘中心为原点）：
-    # -45° ~ 45°：右侧 → vertical
-    # 45° ~ 135°：下侧 → horizontal  
-    # 135° ~ 180° 或 -180° ~ -135°：左侧 → vertical
-    # -135° ~ -45°：上侧 → horizontal
-    
-    abs_angle = abs(angle_deg)
-    
-    # 左右侧异常（±45°范围外的水平方向）
-    if abs_angle < 45 or abs_angle > 135:
-        return 'vertical'
-    # 上下侧异常（±45°范围内的垂直方向）
-    else:
-        return 'horizontal'
-
-def get_target_pad_mask(img, circular_centers):
-    """
-    生成只包含与圆形结构（焊盘）相连的红色区域的掩膜。
-    用于剔除背景中无关的红色走线上的异常。
-    """
-    h, w = img.shape[:2]
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    
-    # 宽泛地提取所有红色区域 (焊盘 + 走线)
-    lower_red1 = np.array([0, 43, 46])
-    upper_red1 = np.array([10, 255, 255])
-    lower_red2 = np.array([156, 43, 46])
-    upper_red2 = np.array([180, 255, 255])
-    
-    mask1 = cv2.inRange(img_hsv, lower_red1, upper_red1)
-    mask2 = cv2.inRange(img_hsv, lower_red2, upper_red2)
-    red_mask = cv2.bitwise_or(mask1, mask2)
-    
-    # 闭运算填充红色区域内部的小孔
-    kernel = np.ones((5, 5), np.uint8)
-    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel)
-    
-    # 保留与 circular_centers (粉色孔) 重叠/相连的红色区域
-    target_pad_mask = np.zeros((h, w), dtype=np.uint8)
-    
-    if not circular_centers:
-        return red_mask  # 如果没找到圆，只能返回所有红色作为保底
-    
-    # 标记所有红色连通域
-    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(red_mask, connectivity=8)
-    
-    valid_labels = set()
-    for cx, cy, radius in circular_centers:
-        check_x = min(max(int(cx), 0), w-1)
-        check_y = min(max(int(cy), 0), h-1)
-        
-        label_id = labels[check_y, check_x]
-        
-        # 如果圆心处是空洞，向外搜索最近的红色
-        if label_id == 0:
-            temp_mask = np.zeros((h, w), np.uint8)
-            cv2.circle(temp_mask, (int(cx), int(cy)), int(radius * 1.5), 1, -1)
-            intersect = cv2.bitwise_and(temp_mask, (labels > 0).astype(np.uint8))
-            if np.sum(intersect) > 0:
-                overlap_labels = labels[np.where((temp_mask > 0) & (labels > 0))]
-                if len(overlap_labels) > 0:
-                    unique, counts = np.unique(overlap_labels, return_counts=True)
-                    label_id = unique[np.argmax(counts)]
-                    valid_labels.add(label_id)
-        else:
-            valid_labels.add(label_id)
-    
-    # 生成最终 Mask
-    for label_id in valid_labels:
-        target_pad_mask[labels == label_id] = 255
-    
-    # 稍微膨胀，确保边缘的异常能被包住
-    target_pad_mask = cv2.dilate(target_pad_mask, kernel, iterations=2)
-    
-    return target_pad_mask
-
-def separate_regions_simple(blue_mask, min_separation_distance=5):
-    """简化版区域分离，基于形态学操作和连通域分析"""
     dist_transform = cv2.distanceTransform(blue_mask, cv2.DIST_L2, 5)
-    
-    # Top-hat 提取局部峰值
-    kernel = np.ones((min_separation_distance, min_separation_distance), np.uint8)
+    kernel = build_kernel(min_separation_distance)
     local_max = cv2.morphologyEx(dist_transform, cv2.MORPH_TOPHAT, kernel)
-    
-    threshold = 0.3 * dist_transform.max()
+
+    threshold = float(0.3 * dist_transform.max())
     _, peaks = cv2.threshold(local_max, threshold, 255, cv2.THRESH_BINARY)
     peaks = peaks.astype(np.uint8)
-    
+
     contours_peaks, _ = cv2.findContours(peaks, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours_peaks) <= 1:
         return blue_mask
-    
-    # 腐蚀分离粘连
-    erosion_kernel = np.ones((2, 2), np.uint8)
+
+    erosion_kernel = build_kernel(2)
     eroded = cv2.erode(blue_mask, erosion_kernel, iterations=1)
-    
     num_labels, labels = cv2.connectedComponents(eroded)
-    
+
     if num_labels <= 2:
         return blue_mask
-    
-    # 膨胀恢复尺寸
+
     separated_mask = np.zeros_like(blue_mask)
-    for i in range(1, num_labels):
-        component = (labels == i).astype(np.uint8) * 255
+    for label_id in range(1, num_labels):
+        component = (labels == label_id).astype(np.uint8) * 255
         component = cv2.dilate(component, erosion_kernel, iterations=1)
         separated_mask = cv2.bitwise_or(separated_mask, component)
-    
+
     return separated_mask
 
-def is_likely_interface_element(contour, img_shape, interface_mask):
-    """基于位置、形状和界面区域重叠度判定是否为界面元素"""
+
+def detect_large_circular_structures(img: np.ndarray, config: DetectorConfig):
+    """基于边缘检测识别焊盘、过孔等大型圆形PCB结构。"""
+    h, w = img.shape[:2]
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, config.structure_canny_low, config.structure_canny_high)
+    close_kernel = build_kernel(config.structure_close_kernel_size)
+    edges = cv2.morphologyEx(
+        edges, cv2.MORPH_CLOSE, close_kernel, iterations=config.structure_close_iterations
+    )
+
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    circular_contours = []
+    circular_centers = []
+    min_structure_area = w * h * config.structure_min_area_ratio
+    max_structure_area = w * h * config.structure_max_area_ratio
+    min_radius = min(w, h) * config.structure_min_radius_ratio
+    max_radius = min(w, h) * config.structure_max_radius_ratio
+
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if not (min_structure_area <= area <= max_structure_area):
+            continue
+
+        (cx, cy), radius = cv2.minEnclosingCircle(contour)
+        if not (min_radius <= radius <= max_radius):
+            continue
+
+        circle_area = np.pi * radius * radius
+        circularity = area / circle_area if circle_area > 0 else 0.0
+        if circularity >= config.structure_min_circularity:
+            circular_contours.append(contour)
+            circular_centers.append((int(round(cx)), int(round(cy)), float(radius)))
+
+    return circular_contours, circular_centers
+
+
+def get_target_pad_mask(img: np.ndarray, circular_centers, config: DetectorConfig) -> np.ndarray:
+    """
+    生成只包含与圆形结构相连的红色铜区掩膜。
+    该掩膜仅作为“空间亲和度参考”，不再与青色掩膜做硬相交。
+    """
+    h, w = img.shape[:2]
+    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    red_mask = build_hsv_mask(img_hsv, config.red_hsv_ranges)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, build_kernel(config.pad_close_kernel_size))
+
+    if not circular_centers:
+        return red_mask
+
+    target_pad_mask = np.zeros((h, w), dtype=np.uint8)
+    num_labels, labels, _, _ = cv2.connectedComponentsWithStats(red_mask, connectivity=8)
+
+    if num_labels <= 1:
+        return red_mask
+
+    valid_labels = set()
+    for cx, cy, radius in circular_centers:
+        check_x = int(np.clip(cx, 0, w - 1))
+        check_y = int(np.clip(cy, 0, h - 1))
+        label_id = labels[check_y, check_x]
+
+        if label_id == 0:
+            probe_mask = np.zeros((h, w), dtype=np.uint8)
+            probe_radius = max(1, int(round(radius * config.pad_component_probe_radius_scale)))
+            cv2.circle(probe_mask, (check_x, check_y), probe_radius, 255, -1)
+            overlap_labels = labels[(probe_mask > 0) & (labels > 0)]
+            if overlap_labels.size > 0:
+                unique_labels, counts = np.unique(overlap_labels, return_counts=True)
+                label_id = int(unique_labels[np.argmax(counts)])
+
+        if label_id > 0:
+            valid_labels.add(label_id)
+
+    for label_id in valid_labels:
+        target_pad_mask[labels == label_id] = 255
+
+    return target_pad_mask
+
+
+def build_soft_pad_mask(target_pad_mask: np.ndarray, config: DetectorConfig) -> np.ndarray:
+    """
+    对焊盘掩膜做超大膨胀，主动弥合被青色 DRC 标记遮挡形成的“黑洞”。
+    这里不做硬裁剪，只把它作为后续空间距离约束参考。
+    """
+    if np.count_nonzero(target_pad_mask) == 0:
+        return target_pad_mask.copy()
+    dilate_kernel = build_kernel(config.pad_soft_dilate_kernel_size)
+    return cv2.dilate(target_pad_mask, dilate_kernel, iterations=config.pad_soft_dilate_iterations)
+
+
+def is_likely_interface_element(contour: np.ndarray, img_shape, interface_mask: np.ndarray) -> bool:
+    """基于位置、形状和界面区域重叠度判定是否为界面元素。"""
     h, w = img_shape[:2]
-    
+
     x, y, w_box, h_box = cv2.boundingRect(contour)
-    area = cv2.contourArea(contour)
-    
     contour_mask = np.zeros((h, w), dtype=np.uint8)
     cv2.fillPoly(contour_mask, [contour], 255)
-    
-    overlap = cv2.bitwise_and(contour_mask, interface_mask)
-    overlap_ratio = np.sum(overlap > 0) / np.sum(contour_mask > 0) if np.sum(contour_mask > 0) > 0 else 0
-    
-    aspect_ratio = w_box / h_box if h_box > 0 else 0
-    is_at_edge = (x < w//10 or x + w_box > w*9//10 or y < h//10 or y + h_box > h*9//10)
-    is_regular = 0.1 < aspect_ratio < 10.0
-    has_interface_overlap = overlap_ratio > 0.3
-    
-    return has_interface_overlap or (is_at_edge and is_regular)
 
-def extract_blue_regions_x_range(image_path, output_dir=None, debug=False):
-    """提取蓝色异常区域并输出2.5倍宽度扩展后的X坐标范围"""
+    contour_pixels = np.count_nonzero(contour_mask)
+    overlap = cv2.bitwise_and(contour_mask, interface_mask)
+    overlap_ratio = np.count_nonzero(overlap) / contour_pixels if contour_pixels > 0 else 0.0
+
+    aspect_ratio = w_box / h_box if h_box > 0 else 0.0
+    is_at_edge = x < w // 10 or x + w_box > w * 9 // 10 or y < h // 10 or y + h_box > h * 9 // 10
+    is_regular = 0.1 < aspect_ratio < 10.0
+
+    return overlap_ratio > 0.3 or (is_at_edge and is_regular)
+
+
+def find_nearest_pad_center(point, circular_centers):
+    """找到距离目标点最近的焊盘中心。"""
+    if not circular_centers:
+        return None
+
+    px, py = point
+    best_center = None
+    best_distance = float("inf")
+    for cx, cy, _ in circular_centers:
+        distance = float(np.hypot(px - cx, py - cy))
+        if distance < best_distance:
+            best_distance = distance
+            best_center = (cx, cy)
+    return best_center
+
+
+def determine_anomaly_direction(anomaly_center, pad_center) -> str:
+    """根据异常圆心相对焊盘圆心的位置，决定主轴扩展方向。"""
+    if pad_center is None:
+        return "horizontal"
+
+    anomaly_cx, anomaly_cy = anomaly_center
+    pad_cx, pad_cy = pad_center
+    dx = anomaly_cx - pad_cx
+    dy = anomaly_cy - pad_cy
+
+    angle_deg = np.degrees(np.arctan2(dy, dx))
+    abs_angle = abs(angle_deg)
+
+    if abs_angle < 45 or abs_angle > 135:
+        return "vertical"
+    return "horizontal"
+
+
+def contour_bounds(contour: np.ndarray):
+    points = contour.reshape(-1, 2)
+    min_x = int(np.min(points[:, 0]))
+    max_x = int(np.max(points[:, 0]))
+    min_y = int(np.min(points[:, 1]))
+    max_y = int(np.max(points[:, 1]))
+    return min_x, max_x, min_y, max_y
+
+
+def clamp_rectangle(x1, y1, x2, y2, img_shape, config: DetectorConfig):
+    h, w = img_shape[:2]
+
+    min_side = max(1, config.minimum_box_side_pixels)
+    x1 = int(np.clip(np.floor(x1), 0, w - 1))
+    x2 = int(np.clip(np.ceil(x2), 0, w - 1))
+    y1 = int(np.clip(np.floor(y1), 0, h - 1))
+    y2 = int(np.clip(np.ceil(y2), 0, h - 1))
+
+    if x2 - x1 < min_side:
+        center_x = (x1 + x2) / 2.0
+        half = min_side / 2.0
+        x1 = int(np.clip(np.floor(center_x - half), 0, w - 1))
+        x2 = int(np.clip(np.ceil(center_x + half), 0, w - 1))
+    if y2 - y1 < min_side:
+        center_y = (y1 + y2) / 2.0
+        half = min_side / 2.0
+        y1 = int(np.clip(np.floor(center_y - half), 0, h - 1))
+        y2 = int(np.clip(np.ceil(center_y + half), 0, h - 1))
+
+    if x2 <= x1:
+        x2 = min(w - 1, x1 + min_side)
+        x1 = max(0, x2 - min_side)
+    if y2 <= y1:
+        y2 = min(h - 1, y1 + min_side)
+        y1 = max(0, y2 - min_side)
+
+    return x1, y1, x2, y2
+
+
+def build_operation_rectangle(candidate: dict, direction: str, img_shape, config: DetectorConfig):
+    """
+    使用“重构圆 + 正交轴边界继承机制”生成最终操作框。
+    主轴按最小外接圆直径做 2.5 倍外推，副轴继承原始残缺轮廓边界并追加 padding，
+    从而既修复被黑色间距切断的主尺寸失真，也避免坐标塌成 1D 线段。
+    """
+    cx, cy = candidate["circle_center"]
+    radius = candidate["circle_radius"]
+    min_x, max_x, min_y, max_y = candidate["contour_bounds"]
+
+    native_diameter = max(2.0 * radius, float(config.minimum_box_side_pixels))
+    expanded_diameter = native_diameter * config.operation_box_expand_ratio
+    half_major_axis = expanded_diameter / 2.0
+    padding = config.operation_box_padding_pixels
+
+    if direction == "horizontal":
+        x1 = cx - half_major_axis
+        x2 = cx + half_major_axis
+        y1 = min_y - padding
+        y2 = max_y + padding
+    else:
+        x1 = min_x - padding
+        x2 = max_x + padding
+        y1 = cy - half_major_axis
+        y2 = cy + half_major_axis
+
+    return clamp_rectangle(x1, y1, x2, y2, img_shape, config)
+
+
+def build_default_candidate(roi_mask: np.ndarray, img_shape, config: DetectorConfig) -> dict:
+    """
+    完全未检测到候选目标时，返回具备明确 2D 面积的保底矩形，防止后续设备 API 因畸形坐标崩溃。
+    """
+    h, w = img_shape[:2]
+    roi_points = np.column_stack(np.where(roi_mask > 0))
+    if roi_points.size > 0:
+        center_y = int(np.mean(roi_points[:, 0]))
+        center_x = int(np.mean(roi_points[:, 1]))
+    else:
+        center_x = w // 2
+        center_y = h // 2
+
+    width = max(config.fallback_min_side_pixels, int(w * config.fallback_width_ratio))
+    height = max(config.fallback_min_side_pixels, int(h * config.fallback_height_ratio))
+    x1, y1, x2, y2 = clamp_rectangle(
+        center_x - width / 2.0,
+        center_y - height / 2.0,
+        center_x + width / 2.0,
+        center_y + height / 2.0,
+        img_shape,
+        config,
+    )
+
+    fallback_contour = np.array(
+        [[[x1, y1]], [[x2, y1]], [[x2, y2]], [[x1, y2]]],
+        dtype=np.int32,
+    )
+    fallback_radius = float(max((x2 - x1) / 2.0, (y2 - y1) / 2.0))
+
+    return {
+        "contour": fallback_contour,
+        "area": float((x2 - x1) * (y2 - y1)),
+        "circle_center": (int(round((x1 + x2) / 2.0)), int(round((y1 + y2) / 2.0))),
+        "circle_radius": fallback_radius,
+        "contour_bounds": (x1, x2, y1, y2),
+        "pad_distance": float("inf"),
+        "distance_to_structure": float("inf"),
+        "aspect_ratio": (x2 - x1) / max(1, (y2 - y1)),
+        "avg_saturation": 0.0,
+        "filter_reason": ["default_region"],
+        "pad_affinity_passed": False,
+        "near_structure": False,
+        "score": 0.0,
+    }
+
+
+def build_candidate_rank(candidate: dict, inf_fallback: float) -> tuple:
+    pad_distance = candidate["pad_distance"]
+    structure_distance = candidate["distance_to_structure"]
+    return (
+        pad_distance if np.isfinite(pad_distance) else inf_fallback,
+        structure_distance if np.isfinite(structure_distance) else inf_fallback,
+        -candidate["circle_radius"],
+        -candidate["area"],
+    )
+
+
+def save_debug_mask(output_dir: Path, img_name: str, suffix: str, mask: np.ndarray):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(str(output_dir / f"{img_name}_{suffix}.jpg"), mask)
+
+
+def build_exception_fallback_result(
+    image_path, output_dir, debug: bool, config: DetectorConfig, error: Exception
+):
+    """当主流程异常时，返回具备 2D 面积的应急结果，避免自动化链路中断。"""
+    img = cv2.imread(str(image_path))
+    if img is None:
+        print(f"异常兜底失败，无法重新读取图像: {image_path}")
+        return None
+
+    img_name = Path(image_path).stem
+    full_roi_mask = np.ones(img.shape[:2], dtype=np.uint8) * 255
+    candidate = build_default_candidate(full_roi_mask, img.shape, config)
+    x1, x2, y1, y2 = candidate["contour_bounds"]
+
+    result = {
+        "image_name": img_name,
+        "anomalies": [
+            {
+                "id": 0,
+                "direction": "horizontal",
+                "coor1": {"x": x1, "y": y1},
+                "coor2": {"x": x2, "y": y2},
+                "reconstructed_circle": {
+                    "center": {"x": candidate["circle_center"][0], "y": candidate["circle_center"][1]},
+                    "radius": round(candidate["circle_radius"], 2),
+                },
+                "confidence": "very_low",
+                "type": "fallback",
+                "warning": f"检测流程异常，已输出应急矩形: {error}",
+                "debug_info": {"filter_reasons": ["pipeline_exception"], "exception": str(error)},
+            }
+        ],
+    }
+
+    if debug and output_dir:
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        exception_mask = np.zeros(img.shape[:2], dtype=np.uint8)
+        cv2.fillPoly(exception_mask, [candidate["contour"]], 255)
+        save_debug_mask(output_path, img_name, "pad_mask_filled", exception_mask)
+        save_debug_mask(output_path, img_name, "blue_mask_filtered", exception_mask)
+
+        debug_img = img.copy()
+        cv2.circle(
+            debug_img,
+            candidate["circle_center"],
+            max(1, int(round(candidate["circle_radius"]))),
+            config.debug_reconstructed_circle_color,
+            2,
+        )
+        cv2.rectangle(debug_img, (x1, y1), (x2, y2), config.debug_fallback_color, 2)
+        cv2.putText(
+            debug_img,
+            "EXCEPTION_FALLBACK",
+            (x1, max(20, y1 - 8)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            config.debug_fallback_color,
+            2,
+        )
+        cv2.imwrite(str(output_path / f"{img_name}_contours_debug.jpg"), debug_img)
+
+    return result
+
+
+def extract_blue_regions_x_range(image_path, output_dir=None, debug=False, config: DetectorConfig = CONFIG):
+    try:
+        return _extract_blue_regions_x_range_impl(image_path, output_dir, debug, config)
+    except Exception as error:
+        print(f"处理图像时发生异常，启用应急兜底: {error}")
+        return build_exception_fallback_result(
+            image_path=image_path,
+            output_dir=output_dir,
+            debug=bool(debug or DEBUG_MODE),
+            config=config,
+            error=error,
+        )
+
+
+def _extract_blue_regions_x_range_impl(image_path, output_dir=None, debug=False, config: DetectorConfig = CONFIG):
+    """提取 Genesis DRC 青色异常区域，并输出稳定的 2D 操作框坐标。"""
     img = cv2.imread(str(image_path))
     if img is None:
         print(f"无法读取图像: {image_path}")
         return None
-    
+
     img_name = Path(image_path).stem
     h, w = img.shape[:2]
-    
-    interface_mask = detect_interface_regions(img)
-    roi_mask = detect_image_content_roi(img)
-    circular_contours, circular_centers = detect_large_circular_structures(img)
-    
-    # 生成目标焊盘掩膜（约束蓝色异常在焊盘范围内）
-    target_pad_mask = get_target_pad_mask(img, circular_centers)
-    
-    # HSV空间更适合蓝色分割
+    debug_enabled = bool(debug or DEBUG_MODE)
+
+    interface_mask = detect_interface_regions(img, config)
+    roi_mask = detect_image_content_roi(img, config)
+    _, circular_centers = detect_large_circular_structures(img, config)
+
+    target_pad_mask = get_target_pad_mask(img, circular_centers, config)
+    soft_pad_mask = build_soft_pad_mask(target_pad_mask, config)
+
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    
-    # 双阈值覆盖标准蓝和亮蓝异常区域
-    lower_blue1 = np.array([100, 80, 80])
-    upper_blue1 = np.array([130, 255, 255])
-    lower_blue2 = np.array([90, 60, 60])
-    upper_blue2 = np.array([110, 255, 255])
-    
-    mask1 = cv2.inRange(hsv, lower_blue1, upper_blue1)
-    mask2 = cv2.inRange(hsv, lower_blue2, upper_blue2)
-    blue_mask = cv2.bitwise_or(mask1, mask2)
-    
-    # 关键约束：将蓝色异常限制在焊盘区域内，切断走线粘连
-    blue_mask = cv2.bitwise_and(blue_mask, target_pad_mask)
-    
-    # 限定在有效ROI内并排除界面
-    blue_mask = cv2.bitwise_and(blue_mask, roi_mask)
-    blue_mask = cv2.bitwise_and(blue_mask, cv2.bitwise_not(interface_mask))
-    
-    # 根据ROI占比自适应调整形态学内核
-    roi_area = np.sum(roi_mask > 0)
-    total_area = h * w
-    roi_ratio = roi_area / total_area if total_area > 0 else 1.0
-    
-    base_kernel_size = max(1, int(3 * roi_ratio))
-    kernel_small = np.ones((base_kernel_size, base_kernel_size), np.uint8)
-    
-    close_kernel_size = max(1, int(2 * roi_ratio)) if roi_ratio < 0.5 else 3
-    kernel_close = np.ones((close_kernel_size, close_kernel_size), np.uint8)
-    
-    # 开运算去噪，闭运算轻度连接碎片
-    blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel_small, iterations=1)
-    blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_CLOSE, kernel_close, iterations=1)
-    
-    # 分水岭分离粘连区域
-    try:
-        min_separation = max(3, int(5 * roi_ratio)) if roi_ratio < 0.5 else 8
-        separated_mask = separate_merged_regions(blue_mask, min_separation_distance=min_separation)
-        
-        contours_before = len(cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0])
-        contours_after = len(cv2.findContours(separated_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0])
-        
-        if contours_after > contours_before:
-            blue_mask = separated_mask
-            if debug:
-                print(f"成功分离区域: {contours_before} -> {contours_after}")
-        elif debug:
-            print("分离未产生新区域，保持原始掩码")
-            
-    except Exception as e:
-        if debug:
-            print(f"区域分离失败，使用原始掩码: {e}")
-    
-    contours, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    # ROI占比越小，面积阈值越低
-    base_min_area = max(50, int(100 * roi_ratio))
-    min_area = base_min_area
-    max_area = max(roi_area // 10, (w * h) // 50)
-    
-    if debug:
-        print(f"ROI占比: {roi_ratio:.3f}")
-        print(f"动态面积阈值: {min_area} - {max_area}")
-        print(f"内核大小: open={base_kernel_size}, close={close_kernel_size}")
-        print(f"找到蓝色轮廓数量: {len(contours)}")
-        print(f"找到圆形结构数量: {len(circular_centers)}")
-        if circular_centers:
-            for i, (cx, cy, r) in enumerate(circular_centers):
-                print(f"  结构{i}: 中心({cx}, {cy}), 半径={r:.1f}")
-    
-    valid_contours = []
-    contours_near_structure = []
+    cyan_mask = build_hsv_mask(hsv, config.cyan_hsv_ranges)
+    cyan_mask = cv2.bitwise_and(cyan_mask, roi_mask)
+    cyan_mask = cv2.bitwise_and(cyan_mask, cv2.bitwise_not(interface_mask))
+
+    cyan_mask = cv2.morphologyEx(
+        cyan_mask,
+        cv2.MORPH_OPEN,
+        build_kernel(config.cyan_open_kernel_size),
+        iterations=config.cyan_open_iterations,
+    )
+    cyan_mask = cv2.morphologyEx(
+        cyan_mask,
+        cv2.MORPH_CLOSE,
+        build_kernel(config.cyan_close_kernel_size),
+        iterations=config.cyan_close_iterations,
+    )
+    cyan_mask = separate_regions_simple(cyan_mask, config.separation_min_distance)
+
+    if np.count_nonzero(soft_pad_mask) > 0:
+        pad_distance_map = cv2.distanceTransform(cv2.bitwise_not(soft_pad_mask), cv2.DIST_L2, 5)
+    else:
+        pad_distance_map = np.full((h, w), np.inf, dtype=np.float32)
+
+    contours, _ = cv2.findContours(cyan_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    roi_area = max(1, int(np.count_nonzero(roi_mask)))
+    min_area = max(config.contour_min_area_pixels, int(roi_area * config.contour_min_area_ratio))
+    max_area = max(min_area + 1, int(roi_area * config.contour_max_area_ratio))
+
+    if debug_enabled:
+        print(f"ROI像素面积: {roi_area}")
+        print(f"候选面积阈值: {min_area} - {max_area}")
+        print(f"找到青色轮廓数量: {len(contours)}")
+        print(f"找到圆形焊盘数量: {len(circular_centers)}")
+
+    valid_candidates = []
+    near_structure_candidates = []
     candidate_pool = []
-    
+    affinity_filtered_blue_mask = np.zeros_like(cyan_mask)
+
     for contour in contours:
-        area = cv2.contourArea(contour)
+        area = float(cv2.contourArea(contour))
         x, y, w_box, h_box = cv2.boundingRect(contour)
-        aspect_ratio = w_box / h_box if h_box > 0 else 0
-        perimeter = cv2.arcLength(contour, True)
-        compactness = 4 * np.pi * area / (perimeter * perimeter) if perimeter > 0 else 0
-        
-        M = cv2.moments(contour)
-        if M["m00"] > 0:
-            cx = int(M["m10"] / M["m00"])
-            cy = int(M["m01"] / M["m00"])
-        else:
-            cx, cy = x + w_box // 2, y + h_box // 2
-        
-        # 提取蓝色区域平均饱和度
+        aspect_ratio = w_box / h_box if h_box > 0 else 0.0
+
+        if area <= 0:
+            continue
+
         contour_mask = np.zeros((h, w), dtype=np.uint8)
         cv2.fillPoly(contour_mask, [contour], 255)
-        masked_hsv = cv2.bitwise_and(hsv, hsv, mask=contour_mask)
-        saturation_values = masked_hsv[:, :, 1][contour_mask > 0]
-        avg_saturation = np.mean(saturation_values) if len(saturation_values) > 0 else 0
-        
-        # 归一化到图像中心距离
-        img_center_x, img_center_y = w // 2, h // 2
-        dist_to_center = np.sqrt((cx - img_center_x)**2 + (cy - img_center_y)**2)
-        max_dist = np.sqrt((w // 2)**2 + (h // 2)**2)
-        normalized_center_dist = dist_to_center / max_dist if max_dist > 0 else 1.0
-        
-        # 计算到最近焊盘结构的距离比
-        distance_to_structure = float('inf')
-        if len(circular_centers) > 0:
-            for struct_cx, struct_cy, radius in circular_centers:
-                dist = np.sqrt((cx - struct_cx)**2 + (cy - struct_cy)**2)
-                dist_ratio = dist / radius if radius > 0 else float('inf')
-                distance_to_structure = min(distance_to_structure, dist_ratio)
-        
-        # 综合评分：面积30 + 饱和度25 + 中心位置15 + 紧凑度20 + 结构接近度10
-        score = 0
-        score += min(area / 1000, 30)
-        score += min(avg_saturation / 255 * 25, 25)
-        score += max(0, (1 - normalized_center_dist) * 15)
-        score += min(compactness * 20, 20)
-        if distance_to_structure != float('inf'):
-            score += max(0, (2 - distance_to_structure) * 10)
-        
-        candidate_info = {
-            'contour': contour,
-            'area': area,
-            'saturation': avg_saturation,
-            'center': (cx, cy),
-            'aspect_ratio': aspect_ratio,
-            'compactness': compactness,
-            'distance_to_structure': distance_to_structure,
-            'score': score,
-            'filter_reason': []
+        saturation_values = hsv[:, :, 1][contour_mask > 0]
+        avg_saturation = float(np.mean(saturation_values)) if saturation_values.size > 0 else 0.0
+
+        # 此处使用最小外接圆重构被间距切割的残缺 DRC 标记，以获取真实物理圆心。
+        # 后续距离计算、方向判定和主轴扩展全部以该理想圆为准，避免残缺像素块造成中心偏移。
+        (circle_cx, circle_cy), circle_radius = cv2.minEnclosingCircle(contour)
+        circle_radius = max(float(circle_radius), config.min_reconstructed_radius_pixels)
+        center_x = int(np.clip(round(circle_cx), 0, w - 1))
+        center_y = int(np.clip(round(circle_cy), 0, h - 1))
+
+        pad_distance = float(pad_distance_map[center_y, center_x]) if np.isfinite(pad_distance_map[center_y, center_x]) else float("inf")
+        pad_distance_limit = max(config.pad_affinity_min_pixels, circle_radius * config.pad_affinity_radius_ratio)
+        pad_affinity_passed = pad_distance <= pad_distance_limit
+
+        if pad_affinity_passed:
+            cv2.fillPoly(affinity_filtered_blue_mask, [contour], 255)
+
+        nearest_pad = find_nearest_pad_center((center_x, center_y), circular_centers)
+        if nearest_pad is None:
+            distance_to_structure = float("inf")
+            near_structure = False
+        else:
+            structure_distance_pixels = float(np.hypot(center_x - nearest_pad[0], center_y - nearest_pad[1]))
+            nearest_radius = next(
+                radius
+                for cx, cy, radius in circular_centers
+                if cx == nearest_pad[0] and cy == nearest_pad[1]
+            )
+            distance_to_structure = (
+                structure_distance_pixels / nearest_radius if nearest_radius > 0 else float("inf")
+            )
+            near_structure = distance_to_structure <= config.structure_near_ratio
+
+        candidate = {
+            "contour": contour,
+            "area": area,
+            "circle_center": (center_x, center_y),
+            "circle_radius": circle_radius,
+            "contour_bounds": contour_bounds(contour),
+            "pad_distance": pad_distance,
+            "distance_to_structure": distance_to_structure,
+            "aspect_ratio": aspect_ratio,
+            "avg_saturation": avg_saturation,
+            "filter_reason": [],
+            "pad_affinity_passed": pad_affinity_passed,
+            "near_structure": near_structure,
+            "score": area,
         }
-        
-        passed_filters = True
-        
+
         if not (min_area <= area <= max_area):
-            candidate_info['filter_reason'].append(f'area_out_of_range({area:.0f})')
-            passed_filters = False
-        
-        if is_likely_interface_element(contour, (h, w), interface_mask):
-            candidate_info['filter_reason'].append('interface_element')
-            passed_filters = False
-        
-        if aspect_ratio < 0.1 or aspect_ratio > 10.0:
-            candidate_info['filter_reason'].append(f'aspect_ratio({aspect_ratio:.2f})')
-            passed_filters = False
-        
-        if compactness < 0.1:
-            candidate_info['filter_reason'].append(f'low_compactness({compactness:.2f})')
-            passed_filters = False
-        
+            candidate["filter_reason"].append(f"area_out_of_range({area:.0f})")
+        if not (config.contour_aspect_min <= aspect_ratio <= config.contour_aspect_max):
+            candidate["filter_reason"].append(f"aspect_ratio({aspect_ratio:.2f})")
+        if is_likely_interface_element(contour, img.shape, interface_mask):
+            candidate["filter_reason"].append("interface_element")
+        if not pad_affinity_passed:
+            candidate["filter_reason"].append(
+                f"pad_affinity(distance={pad_distance:.2f}, limit={pad_distance_limit:.2f})"
+            )
+
+        passed_filters = len(candidate["filter_reason"]) == 0
         if passed_filters:
-            valid_contours.append(contour)
-            
-            if len(circular_centers) > 0:
-                is_near, distance_ratio = is_anomaly_near_structure(contour, circular_centers, (h, w))
-                if is_near:
-                    contours_near_structure.append((contour, distance_ratio))
-                    if debug:
-                        print(f"  轮廓 {len(valid_contours)-1} 靠近结构，距离比例: {distance_ratio:.2f}")
-        
-        candidate_pool.append(candidate_info)
-    
-    result = {
-        'image_name': img_name,
-        'anomalies': []
-    }
-    
+            valid_candidates.append(candidate)
+            if near_structure:
+                near_structure_candidates.append(candidate)
+
+        candidate_pool.append(candidate)
+
+        if debug_enabled:
+            print(
+                "  候选: "
+                f"center=({center_x}, {center_y}), "
+                f"r={circle_radius:.1f}, "
+                f"area={area:.0f}, "
+                f"pad_dist={pad_distance:.2f}, "
+                f"struct_ratio={distance_to_structure:.2f}"
+            )
+
+    result = {"image_name": img_name, "anomalies": []}
     is_fallback = False
     is_default_region = False
-    
-    # 保底策略：无有效轮廓时启用候选池
-    if len(valid_contours) == 0 and len(candidate_pool) > 0:
+
+    if not valid_candidates and candidate_pool:
         is_fallback = True
-        candidate_pool.sort(key=lambda x: x['score'], reverse=True)
-        
-        best_candidate = candidate_pool[0]
-        contours_to_process = [best_candidate['contour']]
-        
-        if debug:
-            print(f"  所有轮廓均被过滤，从候选池中选择最佳候选")
-            print(f"  最佳候选评分: {best_candidate['score']:.2f}")
-            print(f"  面积: {best_candidate['area']:.0f}")
-            print(f"  饱和度: {best_candidate['saturation']:.1f}")
-            print(f"  紧凑度: {best_candidate['compactness']:.2f}")
-            print(f"  过滤原因: {', '.join(best_candidate['filter_reason'])}")
-            
-            print(f"  候选池排名 (前5名):")
-            for i, cand in enumerate(candidate_pool[:5]):
-                print(f"    {i+1}. 评分={cand['score']:.2f}, 面积={cand['area']:.0f}, "
-                      f"饱和度={cand['saturation']:.1f}, 过滤原因={', '.join(cand['filter_reason']) if cand['filter_reason'] else '通过'}")
-    
-    elif len(valid_contours) == 0 and len(candidate_pool) == 0:
-        # 兜底策略：完全未检测到蓝色时，在ROI中心输出默认区域
+        fallback_sort_inf = float(max(h, w) * config.operation_box_expand_ratio)
+        candidate_pool.sort(key=lambda item: build_candidate_rank(item, fallback_sort_inf))
+        selected_candidates = [candidate_pool[0]]
+
+        if debug_enabled:
+            print("所有候选均未完全通过过滤，启用 fallback 最优候选。")
+            print(f"  过滤原因: {', '.join(selected_candidates[0]['filter_reason'])}")
+    elif not valid_candidates:
         is_fallback = True
         is_default_region = True
-        
-        if debug:
-            print(f"未检测到任何蓝色区域，创建默认检测区域")
-        
-        roi_points = np.column_stack(np.where(roi_mask > 0))
-        if len(roi_points) > 0:
-            roi_center_y = int(np.mean(roi_points[:, 0]))
-            roi_center_x = int(np.mean(roi_points[:, 1]))
-        else:
-            roi_center_x, roi_center_y = w // 2, h // 2
-        
-        default_width = w // 5
-        default_height = h // 8
-        
-        default_x1 = max(0, roi_center_x - default_width // 2)
-        default_y1 = max(0, roi_center_y - default_height // 2)
-        default_x2 = min(w, roi_center_x + default_width // 2)
-        default_y2 = min(h, roi_center_y + default_height // 2)
-        
-        default_contour = np.array([
-            [[default_x1, default_y1]],
-            [[default_x2, default_y1]],
-            [[default_x2, default_y2]],
-            [[default_x1, default_y2]]
-        ], dtype=np.int32)
-        
-        contours_to_process = [default_contour]
-        cv2.rectangle(blue_mask, (default_x1, default_y1), (default_x2, default_y2), 255, -1)
-        
-        if debug:
-            print(f"  默认区域位置: 中心({roi_center_x}, {roi_center_y}), 大小: {default_width}x{default_height}")
-    
-    elif len(contours_near_structure) > 0:
-        # 策略1：有焊盘结构时，优先选择相邻异常
-        contours_near_structure.sort(key=lambda x: x[1])
-        contours_to_process = [c[0] for c in contours_near_structure]
-        if debug:
-            print(f"策略1: 只保留靠近圆形结构的 {len(contours_to_process)} 个异常区域")
-    elif len(valid_contours) > 1:
-        # 策略2：多异常时基于结构亲和度选择（优先选择靠近焊盘的）
-        contour_info = []
-        for contour in valid_contours:
-            M = cv2.moments(contour)
-            if M["m00"] > 0:
-                area = cv2.contourArea(contour)
-                
-                # 计算结构亲和度得分
-                affinity_score = 0
-                distance_ratio = float('inf')
-                if len(circular_centers) > 0:
-                    is_near, distance_ratio = is_anomaly_near_structure(contour, circular_centers, (h, w))
-                    if is_near:
-                        affinity_score = 100 / (distance_ratio + 0.1)  # 距离越近分数越高
-                
-                # 综合评分：结构亲和度(60%) + 面积(40%)
-                final_score = affinity_score * 0.6 + (area / 1000) * 0.4
-                
-                contour_info.append((contour, final_score, distance_ratio))
-        
-        if contour_info:
-            contour_info.sort(key=lambda x: x[1], reverse=True)  # 按得分降序
-            contours_to_process = [contour_info[0][0]]
-            if debug:
-                print(f"策略2: 选择结构亲和度最高的异常区域 (得分={contour_info[0][1]:.2f}, 距离比={contour_info[0][2]:.2f})")
-        else:
-            contours_to_process = valid_contours
+        selected_candidates = [build_default_candidate(roi_mask, img.shape, config)]
+        cv2.fillPoly(cyan_mask, [selected_candidates[0]["contour"]], 255)
+        cv2.fillPoly(affinity_filtered_blue_mask, [selected_candidates[0]["contour"]], 255)
+
+        if debug_enabled:
+            print("未检测到任何青色候选，输出具备 2D 面积的默认矩形。")
+    elif near_structure_candidates:
+        fallback_sort_inf = float(max(h, w) * config.operation_box_expand_ratio)
+        near_structure_candidates.sort(key=lambda item: build_candidate_rank(item, fallback_sort_inf))
+        selected_candidates = near_structure_candidates
+        if debug_enabled:
+            print(f"优先输出靠近焊盘结构的 {len(selected_candidates)} 个候选。")
+    elif len(valid_candidates) > 1:
+        fallback_sort_inf = float(max(h, w) * config.operation_box_expand_ratio)
+        valid_candidates.sort(key=lambda item: build_candidate_rank(item, fallback_sort_inf))
+        selected_candidates = [valid_candidates[0]]
+        if debug_enabled:
+            print("存在多个有效候选，输出空间亲和度最高的单一目标。")
     else:
-        contours_to_process = valid_contours
-        if debug:
-            print(f"处理所有 {len(contours_to_process)} 个有效轮廓")
-    
-    # 提取异常区域的坐标并按方向自适应扩展
-    for i, contour in enumerate(contours_to_process):
-        x, y, w_box, h_box = cv2.boundingRect(contour)
-        
-        # 计算异常区域重心
-        M = cv2.moments(contour)
-        if M["m00"] > 0:
-            cx = int(M["m10"] / M["m00"])
-            cy = int(M["m01"] / M["m00"])
-        else:
-            cx, cy = x + w_box // 2, y + h_box // 2
-        
-        # --- 步骤1：找到最近焊盘并判断方向 ---
-        nearest_pad = find_nearest_pad_center(contour, circular_centers)
-        direction = determine_anomaly_direction(contour, nearest_pad)
-        
-        # --- 步骤2：根据方向自适应生成坐标 ---
-        points = contour.reshape(-1, 2)
-        min_x = int(np.min(points[:, 0]))
-        max_x = int(np.max(points[:, 0]))
-        min_y = int(np.min(points[:, 1]))
-        max_y = int(np.max(points[:, 1]))
-        
-        if direction == 'horizontal':
-            # === 横向扩展：上下侧异常 ===
-            original_width = max_x - min_x
-            expanded_width = int(original_width * 2.5)
-            expansion = (expanded_width - original_width) // 2
-            
-            p1_x = max(0, min_x - expansion)
-            p1_y = (min_y + max_y) // 2
-            p2_x = min(w - 1, max_x + expansion)
-            p2_y = (min_y + max_y) // 2
-            
-        else:  # direction == 'vertical'
-            # === 纵向扩展：左右侧异常 ===
-            original_height = max_y - min_y
-            expanded_height = int(original_height * 2.5)
-            expansion = (expanded_height - original_height) // 2
-            
-            p1_x = (min_x + max_x) // 2
-            p1_y = max(0, min_y - expansion)
-            p2_x = (min_x + max_x) // 2
-            p2_y = min(h - 1, max_y + expansion)
-        
+        selected_candidates = valid_candidates
+        if debug_enabled:
+            print("输出单个有效候选。")
+
+    for index, candidate in enumerate(selected_candidates):
+        nearest_pad = find_nearest_pad_center(candidate["circle_center"], circular_centers)
+        direction = determine_anomaly_direction(candidate["circle_center"], nearest_pad)
+        x1, y1, x2, y2 = build_operation_rectangle(candidate, direction, img.shape, config)
+
         anomaly_info = {
-            'id': i,
-            'direction': direction,  # 新增：输出方向供设备参考
-            'coor1': {'x': p1_x, 'y': p1_y},
-            'coor2': {'x': p2_x, 'y': p2_y},
+            "id": index,
+            "direction": direction,
+            "coor1": {"x": x1, "y": y1},
+            "coor2": {"x": x2, "y": y2},
+            "reconstructed_circle": {
+                "center": {"x": candidate["circle_center"][0], "y": candidate["circle_center"][1]},
+                "radius": round(candidate["circle_radius"], 2),
+            },
         }
-        
-        # 保留原有的置信度标记逻辑
+
         if is_default_region:
-            anomaly_info['confidence'] = 'very_low'
-            anomaly_info['type'] = 'default_region'
-            anomaly_info['warning'] = '未检测到任何蓝色区域，此为默认输出'
+            anomaly_info["confidence"] = "very_low"
+            anomaly_info["type"] = "default_region"
+            anomaly_info["warning"] = "未检测到任何青色区域，此为具备 2D 面积的默认输出"
         elif is_fallback:
-            anomaly_info['confidence'] = 'low'
-            anomaly_info['type'] = 'fallback'
+            anomaly_info["confidence"] = "low"
+            anomaly_info["type"] = "fallback"
         else:
-            anomaly_info['confidence'] = 'high'
-            anomaly_info['type'] = 'normal'
-        
-        # 保留debug_info逻辑
-        if is_fallback and not is_default_region and len(candidate_pool) > 0:
-            best_candidate = candidate_pool[0]
-            anomaly_info['debug_info'] = {
-                'score': round(best_candidate['score'], 2),
-                'area': int(best_candidate['area']),
-                'saturation': round(best_candidate['saturation'], 1),
-                'compactness': round(best_candidate['compactness'], 2),
-                'filter_reasons': best_candidate['filter_reason']
+            anomaly_info["confidence"] = "high"
+            anomaly_info["type"] = "normal"
+
+        if is_fallback and not is_default_region:
+            anomaly_info["debug_info"] = {
+                "area": int(candidate["area"]),
+                "pad_distance": round(candidate["pad_distance"], 2)
+                if np.isfinite(candidate["pad_distance"])
+                else "inf",
+                "structure_distance_ratio": round(candidate["distance_to_structure"], 2)
+                if np.isfinite(candidate["distance_to_structure"])
+                else "inf",
+                "filter_reasons": candidate["filter_reason"],
             }
-        
-        # 新增：记录焊盘参考信息（用于调试）
-        if nearest_pad and debug:
-            anomaly_info['debug_pad_reference'] = {
-                'pad_center': {'x': nearest_pad[0], 'y': nearest_pad[1]},
-                'anomaly_center': {'x': cx, 'y': cy}
-            }
-        
-        result['anomalies'].append(anomaly_info)
-    
-    # 生成调试可视化图像
-    if debug and output_dir:
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
-        
+
+        if debug_enabled:
+            anomaly_info["debug_pad_reference"] = (
+                {
+                    "pad_center": {"x": nearest_pad[0], "y": nearest_pad[1]},
+                    "anomaly_center": {
+                        "x": candidate["circle_center"][0],
+                        "y": candidate["circle_center"][1],
+                    },
+                }
+                if nearest_pad
+                else None
+            )
+
+        result["anomalies"].append(anomaly_info)
+
+    if debug_enabled and output_dir:
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        save_debug_mask(output_path, img_name, "pad_mask_filled", soft_pad_mask)
+        save_debug_mask(output_path, img_name, "blue_mask_filtered", affinity_filtered_blue_mask)
+
         debug_img = img.copy()
-        
-        # 绘制焊盘结构
-        if len(circular_centers) > 0:
-            for cx, cy, radius in circular_centers:
-                cv2.circle(debug_img, (cx, cy), int(radius), (0, 255, 255), 2)
-                cv2.circle(debug_img, (cx, cy), 3, (0, 255, 255), -1)
-        
-        # 按检测类型设置标记颜色
-        if is_default_region:
-            contour_color = (0, 0, 255)
-            box_color = (255, 0, 255)
-            label_prefix = 'DEFAULT'
-        elif is_fallback:
-            contour_color = (0, 165, 255)
-            box_color = (0, 140, 255)
-            label_prefix = 'FALLBACK'
-        else:
-            contour_color = (0, 255, 0)
-            box_color = (255, 0, 0)
-            label_prefix = 'ID'
-        
-        cv2.drawContours(debug_img, contours_to_process, -1, contour_color, 2)
-        
-        for i, contour in enumerate(contours_to_process):
-            x, y, w_box, h_box = cv2.boundingRect(contour)
-            cv2.rectangle(debug_img, (x, y), (x + w_box, y + h_box), box_color, 2)
-            
-            label = f'{label_prefix}:{i}'
-            cv2.putText(debug_img, label, (x, y-10), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-        
-        if is_default_region:
-            cv2.putText(debug_img, 'WARNING: DEFAULT REGION OUTPUT', 
-                       (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-        elif is_fallback:
-            cv2.putText(debug_img, 'WARNING: FALLBACK OUTPUT', 
-                       (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 165, 255), 2)
-        
-        debug_path = Path(output_dir) / f"{img_name}_contours_debug.jpg"
-        cv2.imwrite(str(debug_path), debug_img)
-        
-        mask_path = Path(output_dir) / f"{img_name}_blue_mask.jpg"
-        cv2.imwrite(str(mask_path), blue_mask)
-        
-        pad_mask_path = Path(output_dir) / f"{img_name}_pad_mask.jpg"
-        cv2.imwrite(str(pad_mask_path), target_pad_mask)
-        
-        if debug:
-            print(f"  调试图像已保存: {debug_path}")
-            print(f"  蓝色掩码已保存: {mask_path}")
-            print(f"  焊盘掩码已保存: {pad_mask_path}")
-    
+
+        if circular_centers:
+            for pad_x, pad_y, radius in circular_centers:
+                cv2.circle(debug_img, (pad_x, pad_y), int(round(radius)), (255, 255, 0), 2)
+                cv2.circle(debug_img, (pad_x, pad_y), 3, (255, 255, 0), -1)
+
+        for index, candidate in enumerate(selected_candidates):
+            draw_color = (
+                config.debug_fallback_color
+                if is_fallback
+                else config.debug_selected_contour_color
+            )
+            cv2.drawContours(debug_img, [candidate["contour"]], -1, draw_color, 2)
+
+            circle_center = candidate["circle_center"]
+            circle_radius = max(1, int(round(candidate["circle_radius"])))
+            cv2.circle(
+                debug_img,
+                circle_center,
+                circle_radius,
+                config.debug_reconstructed_circle_color,
+                2,
+            )
+            cv2.circle(debug_img, circle_center, 3, config.debug_reconstructed_circle_color, -1)
+
+            anomaly = result["anomalies"][index]
+            top_left = (anomaly["coor1"]["x"], anomaly["coor1"]["y"])
+            bottom_right = (anomaly["coor2"]["x"], anomaly["coor2"]["y"])
+            cv2.rectangle(debug_img, top_left, bottom_right, config.debug_operation_box_color, 2)
+
+            label_prefix = "DEFAULT" if is_default_region else ("FALLBACK" if is_fallback else "ID")
+            cv2.putText(
+                debug_img,
+                f"{label_prefix}:{index}",
+                (top_left[0], max(20, top_left[1] - 8)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                config.debug_operation_box_color,
+                2,
+            )
+
+        cv2.imwrite(str(output_path / f"{img_name}_contours_debug.jpg"), debug_img)
+
+        if debug_enabled:
+            print(f"调试图像已保存到: {output_path}")
+
     return result
 
-def batch_extract_x_ranges(input_dir, output_dir, debug=False):
-    """批量处理图像目录，提取所有图像的蓝色异常区域坐标"""
+
+def batch_extract_x_ranges(input_dir, output_dir, debug=False, config: DetectorConfig = CONFIG):
+    """批量处理图像目录，提取所有图像的青色异常区域坐标。"""
     input_path = Path(input_dir)
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    
-    image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif'}
-    
+
+    image_extensions = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif"}
     image_files = []
     for ext in image_extensions:
-        image_files.extend(input_path.glob(f'*{ext}'))
-        image_files.extend(input_path.glob(f'*{ext.upper()}'))
-    
+        image_files.extend(input_path.glob(f"*{ext}"))
+        image_files.extend(input_path.glob(f"*{ext.upper()}"))
+
     if not image_files:
         print(f"在目录 {input_dir} 中未找到图像文件")
         return
-    
+
     print(f"找到 {len(image_files)} 个图像文件")
-    
+
     all_results = []
     fallback_count = 0
     default_region_count = 0
-    
-    for i, img_file in enumerate(image_files, 1):
-        print(f"处理 {i}/{len(image_files)}: {img_file.name}")
-        
-        result = extract_blue_regions_x_range(img_file, output_path if debug else None, debug)
-        
-        if result:
-            all_results.append(result)
-            
-            has_default = any(a.get('type') == 'default_region' for a in result['anomalies'])
-            has_fallback = any(a.get('type') == 'fallback' for a in result['anomalies'])
-            
-            if has_default:
-                default_region_count += 1
-                print(f"  -> 找到 {len(result['anomalies'])} 个蓝色异常区域 [默认区域]")
-            elif has_fallback:
-                fallback_count += 1
-                print(f"  -> 找到 {len(result['anomalies'])} 个蓝色异常区域 [保底输出]")
-            else:
-                print(f"  -> 找到 {len(result['anomalies'])} 个蓝色异常区域")
-            
-            single_result_file = output_path / f"{result['image_name']}_anomalies.json"
-            with open(single_result_file, 'w', encoding='utf-8') as f:
-                json.dump(result, f, indent=2, ensure_ascii=False)
+
+    for index, img_file in enumerate(sorted(image_files), 1):
+        print(f"处理 {index}/{len(image_files)}: {img_file.name}")
+        result = extract_blue_regions_x_range(img_file, output_path if debug else None, debug, config)
+
+        if result is None:
+            print("  -> 处理失败")
+            continue
+
+        all_results.append(result)
+
+        has_default = any(anomaly.get("type") == "default_region" for anomaly in result["anomalies"])
+        has_fallback = any(anomaly.get("type") == "fallback" for anomaly in result["anomalies"])
+
+        if has_default:
+            default_region_count += 1
+            print(f"  -> 找到 {len(result['anomalies'])} 个异常区域 [默认区域]")
+        elif has_fallback:
+            fallback_count += 1
+            print(f"  -> 找到 {len(result['anomalies'])} 个异常区域 [保底输出]")
         else:
-            print(f"  -> 处理失败")
-    
+            print(f"  -> 找到 {len(result['anomalies'])} 个异常区域")
+
+        single_result_file = output_path / f"{result['image_name']}_anomalies.json"
+        with open(single_result_file, "w", encoding="utf-8") as file_obj:
+            json.dump(result, file_obj, indent=2, ensure_ascii=False)
+
     summary_file = output_path / "blue_anomalies_summary.json"
-    with open(summary_file, 'w', encoding='utf-8') as f:
-        json.dump(all_results, f, indent=2, ensure_ascii=False)
-    
-    print(f"\n处理完成!")
+    with open(summary_file, "w", encoding="utf-8") as file_obj:
+        json.dump(all_results, file_obj, indent=2, ensure_ascii=False)
+
+    print("\n处理完成!")
     print(f"汇总结果保存到: {summary_file}")
-    
-    total_anomalies = sum(len(r['anomalies']) for r in all_results)
+
+    total_anomalies = sum(len(item["anomalies"]) for item in all_results)
     normal_count = len(all_results) - fallback_count - default_region_count
-    
-    print(f"\n{'='*60}")
-    print(f"统计信息:")
-    print(f"{'='*60}")
+
+    print(f"\n{'=' * 60}")
+    print("统计信息:")
+    print(f"{'=' * 60}")
     print(f"总共处理图像: {len(all_results)}")
     print(f"总共检测到异常区域: {total_anomalies}")
-    print(f"\n检测质量分布:")
-    print(f"正常检测: {normal_count}/{len(all_results)} ({normal_count/len(all_results)*100:.1f}%)")
-    
-    if fallback_count > 0:
-        print(f"  保底输出: {fallback_count}/{len(all_results)} ({fallback_count/len(all_results)*100:.1f}%)")
-        print(f"  (所有轮廓被过滤，从候选池选择最佳)")
-    
-    if default_region_count > 0:
-        print(f"  默认区域: {default_region_count}/{len(all_results)} ({default_region_count/len(all_results)*100:.1f}%)")
-        print(f"  完全未检测到蓝色，使用默认位置)")
-    
-    print(f"{'='*60}")
-    
-    if fallback_count > 0 or default_region_count > 0:
-        print(f"\n 建议检查低质量输出图像：调整HSV范围、面积阈值或查看调试图像")
-    
+    print("\n检测质量分布:")
+
+    if all_results:
+        total_images = len(all_results)
+        print(f"正常检测: {normal_count}/{total_images} ({normal_count / total_images * 100:.1f}%)")
+        if fallback_count > 0:
+            print(f"保底输出: {fallback_count}/{total_images} ({fallback_count / total_images * 100:.1f}%)")
+        if default_region_count > 0:
+            print(
+                f"默认区域: {default_region_count}/{total_images} "
+                f"({default_region_count / total_images * 100:.1f}%)"
+            )
+    else:
+        print("没有成功处理的图像。")
+
+    print(f"{'=' * 60}")
     if debug:
         print(f"\n调试图像保存到: {output_path}")
 
+
 def main():
-    parser = argparse.ArgumentParser(description='检测图像中的蓝色异常区域并输出坐标范围')
-    parser.add_argument('input_dir', nargs='?', help='输入图像目录路径（批量处理时必需）')
-    parser.add_argument('-o', '--output', default='./anomaly_results', 
-                       help='输出目录路径 (默认: ./anomaly_results)')
-    parser.add_argument('--debug', action='store_true', 
-                       help='保存调试可视化图像')
-    parser.add_argument('--single', help='处理单张图像（提供图像路径）')
-    
+    parser = argparse.ArgumentParser(description="检测图像中的 Genesis DRC 青色异常区域并输出稳定操作框")
+    parser.add_argument("input_dir", nargs="?", help="输入图像目录路径（批量处理时必需）")
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="./anomaly_results",
+        help="输出目录路径 (默认: ./anomaly_results)",
+    )
+    parser.add_argument("--debug", action="store_true", help="保存调试可视化图像")
+    parser.add_argument("--single", help="处理单张图像（提供图像路径）")
+
     args = parser.parse_args()
-    
+
     if args.single:
-        result = extract_blue_regions_x_range(args.single, args.output, args.debug)
-        if result:
-            output_file = Path(args.output) / f"{result['image_name']}_anomalies.json"
-            Path(args.output).mkdir(parents=True, exist_ok=True)
-            
-            with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(result, f, indent=2, ensure_ascii=False)
-            
-            print(f"单张图像处理完成，结果保存到: {output_file}")
-            print(f"找到 {len(result['anomalies'])} 个蓝色异常区域")
-            
-            for anomaly in result['anomalies']:
-                if anomaly.get('type') == 'default_region':
-                    confidence_marker = " [默认区域 - 未检测到任何蓝色]"
-                elif anomaly.get('type') == 'fallback':
-                    confidence_marker = " [保底输出]"
-                else:
-                    confidence_marker = ""
-                    
-                print(f"  区域 {anomaly['id']}: 方向={anomaly.get('direction', 'N/A')}, "
-                      f"坐标范围 coor1({anomaly['coor1']['x']}, {anomaly['coor1']['y']}) -> "
-                      f"coor2({anomaly['coor2']['x']}, {anomaly['coor2']['y']}){confidence_marker}")
-                
-                if 'warning' in anomaly:
-                    print(f"    {anomaly['warning']}")
-                
-                if 'debug_info' in anomaly:
-                    debug = anomaly['debug_info']
-                    print(f"    评分: {debug['score']}, 面积: {debug['area']}, 饱和度: {debug['saturation']}, 紧凑度: {debug['compactness']}")
-                    if debug['filter_reasons']:
-                        print(f"    被过滤原因: {', '.join(debug['filter_reasons'])}")
-        else:
+        result = extract_blue_regions_x_range(args.single, args.output, args.debug, CONFIG)
+        if result is None:
             print("图像处理失败")
+            return
+
+        output_file = Path(args.output) / f"{result['image_name']}_anomalies.json"
+        Path(args.output).mkdir(parents=True, exist_ok=True)
+
+        with open(output_file, "w", encoding="utf-8") as file_obj:
+            json.dump(result, file_obj, indent=2, ensure_ascii=False)
+
+        print(f"单张图像处理完成，结果保存到: {output_file}")
+        print(f"找到 {len(result['anomalies'])} 个异常区域")
+
+        for anomaly in result["anomalies"]:
+            if anomaly.get("type") == "default_region":
+                confidence_marker = " [默认区域 - 未检测到任何青色]"
+            elif anomaly.get("type") == "fallback":
+                confidence_marker = " [保底输出]"
+            else:
+                confidence_marker = ""
+
+            print(
+                f"  区域 {anomaly['id']}: "
+                f"方向={anomaly.get('direction', 'N/A')}, "
+                f"coor1({anomaly['coor1']['x']}, {anomaly['coor1']['y']}) -> "
+                f"coor2({anomaly['coor2']['x']}, {anomaly['coor2']['y']})"
+                f"{confidence_marker}"
+            )
+
+            if "warning" in anomaly:
+                print(f"    {anomaly['warning']}")
+            if "debug_info" in anomaly:
+                debug_info = anomaly["debug_info"]
+                print(
+                    f"    面积: {debug_info['area']}, "
+                    f"pad距离: {debug_info['pad_distance']}, "
+                    f"结构距离比: {debug_info['structure_distance_ratio']}"
+                )
+                if debug_info["filter_reasons"]:
+                    print(f"    被过滤原因: {', '.join(debug_info['filter_reasons'])}")
     else:
         if not args.input_dir:
             parser.error("批量处理模式需要提供 input_dir 参数")
-        batch_extract_x_ranges(args.input_dir, args.output, args.debug)
+        batch_extract_x_ranges(args.input_dir, args.output, args.debug, CONFIG)
+
 
 if __name__ == "__main__":
-    main() 
+    main()

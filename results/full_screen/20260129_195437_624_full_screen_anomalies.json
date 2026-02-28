@@ -1,0 +1,35 @@
+{
+  "image_name": "20260129_195437_624_full_screen",
+  "anomalies": [
+    {
+      "id": 0,
+      "direction": "horizontal",
+      "coor1": {
+        "x": 0,
+        "y": 68
+      },
+      "coor2": {
+        "x": 1919,
+        "y": 80
+      },
+      "reconstructed_circle": {
+        "center": {
+          "x": 1180,
+          "y": 74
+        },
+        "radius": 666.5
+      },
+      "confidence": "low",
+      "type": "fallback",
+      "debug_info": {
+        "area": 4993,
+        "pad_distance": 0.0,
+        "structure_distance_ratio": "inf",
+        "filter_reasons": [
+          "aspect_ratio(266.80)"
+        ]
+      },
+      "debug_pad_reference": null
+    }
+  ]
+}

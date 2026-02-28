@@ -1,0 +1,47 @@
+{
+  "timestamp": "20260106_193850_801",
+  "datetime": "2026-01-06 19:38:50",
+  "cyan_center": [
+    955,
+    481
+  ],
+  "red_center": [
+    1312,
+    612
+  ],
+  "capture_region": {
+    "x": 448,
+    "y": 0,
+    "w": 1014,
+    "h": 1014
+  },
+  "ai_result": {
+    "lines": [
+      {
+        "start": [
+          451,
+          471
+        ],
+        "end": [
+          545,
+          471
+        ]
+      }
+    ],
+    "anomalies": [
+      {
+        "id": 0,
+        "coor1": {
+          "x": 451,
+          "y": 471
+        },
+        "coor2": {
+          "x": 545,
+          "y": 471
+        },
+        "confidence": "high",
+        "type": "normal"
+      }
+    ]
+  }
+}

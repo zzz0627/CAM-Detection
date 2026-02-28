@@ -1,0 +1,57 @@
+{
+  "timestamp": "20260129_195613_616",
+  "datetime": "2026-01-29 19:56:13",
+  "cyan_center": [
+    955,
+    473
+  ],
+  "red_center": [
+    368,
+    269
+  ],
+  "capture_region": {
+    "x": 218,
+    "y": 0,
+    "w": 1080,
+    "h": 1080
+  },
+  "ai_result": {
+    "lines": [
+      {
+        "start": [
+          151,
+          351
+        ],
+        "end": [
+          155,
+          351
+        ]
+      }
+    ],
+    "anomalies": [
+      {
+        "id": 0,
+        "direction": "horizontal",
+        "coor1": {
+          "x": 151,
+          "y": 351
+        },
+        "coor2": {
+          "x": 155,
+          "y": 351
+        },
+        "confidence": "low",
+        "type": "fallback",
+        "debug_info": {
+          "score": 26.8,
+          "area": 2,
+          "saturation": 59.7,
+          "compactness": 0.7,
+          "filter_reasons": [
+            "area_out_of_range(2)"
+          ]
+        }
+      }
+    ]
+  }
+}
