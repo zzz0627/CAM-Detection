@@ -4,14 +4,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 881,
-          "y": 443
+          "x": 940,
+          "y": 407
         },
         "coor2": {
-          "x": 1015,
-          "y": 504
+          "x": 975,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -22,7 +22,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 948,
+            "y": 474
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 970,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 970,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -31,14 +47,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 878,
-          "y": 456
+          "x": 922,
+          "y": 412
         },
         "coor2": {
-          "x": 1014,
-          "y": 507
+          "x": 973,
+          "y": 548
         },
         "reconstructed_circle": {
           "center": {
@@ -49,7 +65,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 946,
+            "y": 480
+          },
+          "anchor_distance": 21.21,
+          "pad_boundary_point": {
+            "x": 961,
+            "y": 495
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 961,
+            "y": 495
+          }
+        }
       }
     ]
   },
@@ -76,7 +108,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 939,
+            "y": 482
+          },
+          "anchor_distance": 23.0,
+          "pad_boundary_point": {
+            "x": 939,
+            "y": 505
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 939,
+            "y": 505
+          }
+        }
       }
     ]
   },
@@ -85,14 +133,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 881,
-          "y": 440
+          "x": 928,
+          "y": 401
         },
         "coor2": {
-          "x": 1015,
-          "y": 493
+          "x": 974,
+          "y": 535
         },
         "reconstructed_circle": {
           "center": {
@@ -103,7 +151,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 948,
+            "y": 468
+          },
+          "anchor_distance": 21.02,
+          "pad_boundary_point": {
+            "x": 967,
+            "y": 459
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 967,
+            "y": 459
+          }
+        }
       }
     ]
   },
@@ -112,14 +176,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 864,
-          "y": 445
+          "x": 904,
+          "y": 408
         },
         "coor2": {
-          "x": 998,
-          "y": 505
+          "x": 941,
+          "y": 542
         },
         "reconstructed_circle": {
           "center": {
@@ -130,7 +194,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 931,
+            "y": 475
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 909,
+            "y": 481
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 909,
+            "y": 481
+          }
+        }
       }
     ]
   },
@@ -157,7 +237,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 943,
+            "y": 482
+          },
+          "anchor_distance": 22.36,
+          "pad_boundary_point": {
+            "x": 953,
+            "y": 502
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 953,
+            "y": 502
+          }
+        }
       }
     ]
   },
@@ -166,14 +262,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 877,
-          "y": 456
+          "x": 922,
+          "y": 411
         },
         "coor2": {
-          "x": 1015,
-          "y": 508
+          "x": 974,
+          "y": 549
         },
         "reconstructed_circle": {
           "center": {
@@ -184,7 +280,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 946,
+            "y": 480
+          },
+          "anchor_distance": 22.63,
+          "pad_boundary_point": {
+            "x": 962,
+            "y": 496
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 962,
+            "y": 496
+          }
+        }
       }
     ]
   },
@@ -211,7 +323,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 944,
+            "y": 465
+          },
+          "anchor_distance": 22.36,
+          "pad_boundary_point": {
+            "x": 954,
+            "y": 445
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 954,
+            "y": 445
+          }
+        }
       }
     ]
   },
@@ -238,7 +366,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 936,
+            "y": 482
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 930,
+            "y": 504
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 930,
+            "y": 504
+          }
+        }
       }
     ]
   },
@@ -265,7 +409,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 940,
+            "y": 464
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 946,
+            "y": 442
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 946,
+            "y": 442
+          }
+        }
       }
     ]
   },
@@ -274,14 +434,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 875,
-          "y": 438
+          "x": 904,
+          "y": 409
         },
         "coor2": {
-          "x": 967,
-          "y": 472
+          "x": 938,
+          "y": 501
         },
         "reconstructed_circle": {
           "center": {
@@ -292,7 +452,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 921,
+            "y": 455
+          },
+          "anchor_distance": 7.07,
+          "pad_boundary_point": {
+            "x": 916,
+            "y": 450
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 916,
+            "y": 450
+          }
+        }
       }
     ]
   },
@@ -319,7 +495,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 943,
+            "y": 482
+          },
+          "anchor_distance": 23.26,
+          "pad_boundary_point": {
+            "x": 953,
+            "y": 503
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 953,
+            "y": 503
+          }
+        }
       }
     ]
   },
@@ -328,14 +520,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 861,
-          "y": 449
+          "x": 903,
+          "y": 409
         },
         "coor2": {
-          "x": 999,
-          "y": 507
+          "x": 948,
+          "y": 547
         },
         "reconstructed_circle": {
           "center": {
@@ -346,7 +538,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 930,
+            "y": 478
+          },
+          "anchor_distance": 22.2,
+          "pad_boundary_point": {
+            "x": 912,
+            "y": 491
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 912,
+            "y": 491
+          }
+        }
       }
     ]
   },
@@ -355,14 +563,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 882,
-          "y": 443
+          "x": 942,
+          "y": 407
         },
         "coor2": {
-          "x": 1016,
-          "y": 504
+          "x": 976,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -373,7 +581,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 949,
+            "y": 474
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 971,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 971,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -382,14 +606,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 863,
-          "y": 457
+          "x": 904,
+          "y": 411
         },
         "coor2": {
-          "x": 1001,
-          "y": 508
+          "x": 956,
+          "y": 549
         },
         "reconstructed_circle": {
           "center": {
@@ -400,7 +624,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 932,
+            "y": 480
+          },
+          "anchor_distance": 22.63,
+          "pad_boundary_point": {
+            "x": 916,
+            "y": 496
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 916,
+            "y": 496
+          }
+        }
       }
     ]
   },
@@ -409,14 +649,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 883,
-          "y": 443
+          "x": 943,
+          "y": 407
         },
         "coor2": {
-          "x": 1017,
-          "y": 504
+          "x": 977,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -427,7 +667,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 950,
+            "y": 474
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 972,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 972,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -436,14 +692,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 883,
-          "y": 443
+          "x": 942,
+          "y": 407
         },
         "coor2": {
-          "x": 1017,
-          "y": 504
+          "x": 977,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -454,7 +710,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 950,
+            "y": 474
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 972,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 972,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -463,14 +735,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 863,
-          "y": 457
+          "x": 904,
+          "y": 411
         },
         "coor2": {
-          "x": 1001,
-          "y": 509
+          "x": 956,
+          "y": 549
         },
         "reconstructed_circle": {
           "center": {
@@ -481,7 +753,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 932,
+            "y": 480
+          },
+          "anchor_distance": 23.02,
+          "pad_boundary_point": {
+            "x": 913,
+            "y": 493
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 913,
+            "y": 493
+          }
+        }
       }
     ]
   },
@@ -490,14 +778,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 861,
-          "y": 439
+          "x": 903,
+          "y": 400
         },
         "coor2": {
-          "x": 997,
-          "y": 495
+          "x": 946,
+          "y": 536
         },
         "reconstructed_circle": {
           "center": {
@@ -508,7 +796,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 929,
+            "y": 468
+          },
+          "anchor_distance": 21.47,
+          "pad_boundary_point": {
+            "x": 910,
+            "y": 458
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 910,
+            "y": 458
+          }
+        }
       }
     ]
   },
@@ -517,14 +821,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 862,
-          "y": 451
+          "x": 903,
+          "y": 414
         },
         "coor2": {
-          "x": 990,
-          "y": 506
+          "x": 940,
+          "y": 542
         },
         "reconstructed_circle": {
           "center": {
@@ -535,7 +839,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 926,
+            "y": 478
+          },
+          "anchor_distance": 18.36,
+          "pad_boundary_point": {
+            "x": 910,
+            "y": 487
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 910,
+            "y": 487
+          }
+        }
       }
     ]
   },
@@ -544,14 +864,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 883,
-          "y": 443
+          "x": 943,
+          "y": 407
         },
         "coor2": {
-          "x": 1017,
-          "y": 504
+          "x": 977,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -562,7 +882,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 950,
+            "y": 474
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 972,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 972,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -571,14 +907,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 886,
-          "y": 440
+          "x": 940,
+          "y": 402
         },
         "coor2": {
-          "x": 1020,
-          "y": 498
+          "x": 977,
+          "y": 536
         },
         "reconstructed_circle": {
           "center": {
@@ -589,7 +925,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 953,
+            "y": 469
+          },
+          "anchor_distance": 19.65,
+          "pad_boundary_point": {
+            "x": 972,
+            "y": 464
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 972,
+            "y": 464
+          }
+        }
       }
     ]
   },
@@ -598,14 +950,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 936,
-          "y": 516
+          "x": 946,
+          "y": 507
         },
         "coor2": {
-          "x": 976,
-          "y": 538
+          "x": 966,
+          "y": 547
         },
         "reconstructed_circle": {
           "center": {
@@ -616,7 +968,20 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "reconstructed_extent",
+          "anomaly_center": {
+            "x": 956,
+            "y": 527
+          },
+          "anchor_distance": 5.66,
+          "pad_boundary_point": {
+            "x": 952,
+            "y": 523
+          },
+          "pad_center": null,
+          "effective_reference_point": null
+        }
       }
     ]
   },
@@ -625,14 +990,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 862,
-          "y": 458
+          "x": 903,
+          "y": 413
         },
         "coor2": {
-          "x": 1000,
-          "y": 509
+          "x": 955,
+          "y": 551
         },
         "reconstructed_circle": {
           "center": {
@@ -643,7 +1008,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 931,
+            "y": 482
+          },
+          "anchor_distance": 21.93,
+          "pad_boundary_point": {
+            "x": 915,
+            "y": 497
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 915,
+            "y": 497
+          }
+        }
       }
     ]
   },
@@ -652,14 +1033,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 862,
-          "y": 457
+          "x": 903,
+          "y": 413
         },
         "coor2": {
-          "x": 1000,
-          "y": 510
+          "x": 955,
+          "y": 551
         },
         "reconstructed_circle": {
           "center": {
@@ -670,7 +1051,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 931,
+            "y": 482
+          },
+          "anchor_distance": 22.63,
+          "pad_boundary_point": {
+            "x": 915,
+            "y": 498
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 915,
+            "y": 498
+          }
+        }
       }
     ]
   },
@@ -679,14 +1076,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 862,
-          "y": 461
+          "x": 903,
+          "y": 414
         },
         "coor2": {
-          "x": 998,
-          "y": 510
+          "x": 955,
+          "y": 550
         },
         "reconstructed_circle": {
           "center": {
@@ -697,7 +1094,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 930,
+            "y": 482
+          },
+          "anchor_distance": 21.93,
+          "pad_boundary_point": {
+            "x": 910,
+            "y": 491
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 910,
+            "y": 491
+          }
+        }
       }
     ]
   },
@@ -724,7 +1137,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 956,
+            "y": 527
+          },
+          "anchor_distance": 6.08,
+          "pad_boundary_point": {
+            "x": 957,
+            "y": 521
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 957,
+            "y": 521
+          }
+        }
       }
     ]
   },
@@ -733,14 +1162,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 862,
-          "y": 459
+          "x": 903,
+          "y": 414
         },
         "coor2": {
-          "x": 998,
-          "y": 510
+          "x": 954,
+          "y": 550
         },
         "reconstructed_circle": {
           "center": {
@@ -751,7 +1180,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 930,
+            "y": 482
+          },
+          "anchor_distance": 21.93,
+          "pad_boundary_point": {
+            "x": 910,
+            "y": 491
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 910,
+            "y": 491
+          }
+        }
       }
     ]
   },
@@ -778,7 +1223,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 940,
+            "y": 460
+          },
+          "anchor_distance": 21.84,
+          "pad_boundary_point": {
+            "x": 946,
+            "y": 439
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 946,
+            "y": 439
+          }
+        }
       }
     ]
   },
@@ -805,7 +1266,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 940,
+            "y": 460
+          },
+          "anchor_distance": 21.84,
+          "pad_boundary_point": {
+            "x": 946,
+            "y": 439
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 946,
+            "y": 439
+          }
+        }
       }
     ]
   },
@@ -832,7 +1309,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 928,
+            "y": 462
+          },
+          "anchor_distance": 19.72,
+          "pad_boundary_point": {
+            "x": 918,
+            "y": 445
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 918,
+            "y": 445
+          }
+        }
       }
     ]
   },
@@ -841,14 +1334,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 859,
-          "y": 443
+          "x": 900,
+          "y": 407
         },
         "coor2": {
-          "x": 993,
-          "y": 504
+          "x": 933,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -859,7 +1352,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 926,
+            "y": 474
+          },
+          "anchor_distance": 21.84,
+          "pad_boundary_point": {
+            "x": 905,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 905,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -868,14 +1377,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 866,
-          "y": 441
+          "x": 908,
+          "y": 400
         },
         "coor2": {
-          "x": 1014,
-          "y": 506
+          "x": 971,
+          "y": 548
         },
         "reconstructed_circle": {
           "center": {
@@ -886,7 +1395,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 940,
+            "y": 474
+          },
+          "anchor_distance": 26.57,
+          "pad_boundary_point": {
+            "x": 965,
+            "y": 465
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 965,
+            "y": 465
+          }
+        }
       }
     ]
   },
@@ -895,14 +1420,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 881,
-          "y": 443
+          "x": 941,
+          "y": 407
         },
         "coor2": {
-          "x": 1015,
-          "y": 504
+          "x": 974,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -913,7 +1438,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 948,
+            "y": 474
+          },
+          "anchor_distance": 21.84,
+          "pad_boundary_point": {
+            "x": 969,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 969,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -922,14 +1463,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 881,
-          "y": 443
+          "x": 941,
+          "y": 407
         },
         "coor2": {
-          "x": 1015,
-          "y": 504
+          "x": 974,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -940,7 +1481,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 948,
+            "y": 474
+          },
+          "anchor_distance": 21.84,
+          "pad_boundary_point": {
+            "x": 969,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 969,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -967,7 +1524,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 935,
+            "y": 468
+          },
+          "anchor_distance": 23.85,
+          "pad_boundary_point": {
+            "x": 922,
+            "y": 448
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 922,
+            "y": 448
+          }
+        }
       }
     ]
   },
@@ -994,7 +1567,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 940,
+            "y": 481
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 946,
+            "y": 503
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 946,
+            "y": 503
+          }
+        }
       }
     ]
   },
@@ -1021,7 +1610,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 940,
+            "y": 473
+          },
+          "anchor_distance": 25.94,
+          "pad_boundary_point": {
+            "x": 952,
+            "y": 450
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 952,
+            "y": 450
+          }
+        }
       }
     ]
   },
@@ -1056,7 +1661,20 @@
             "aspect_ratio(266.80)"
           ]
         },
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "contour_aspect",
+          "anomaly_center": {
+            "x": 1180,
+            "y": 74
+          },
+          "anchor_distance": 5.0,
+          "pad_boundary_point": {
+            "x": 1180,
+            "y": 79
+          },
+          "pad_center": null,
+          "effective_reference_point": null
+        }
       }
     ]
   },
@@ -1065,14 +1683,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 866,
-          "y": 441
+          "x": 908,
+          "y": 400
         },
         "coor2": {
-          "x": 1014,
-          "y": 506
+          "x": 971,
+          "y": 548
         },
         "reconstructed_circle": {
           "center": {
@@ -1083,7 +1701,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 940,
+            "y": 474
+          },
+          "anchor_distance": 26.57,
+          "pad_boundary_point": {
+            "x": 965,
+            "y": 465
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 965,
+            "y": 465
+          }
+        }
       }
     ]
   },
@@ -1092,14 +1726,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 881,
-          "y": 443
+          "x": 941,
+          "y": 407
         },
         "coor2": {
-          "x": 1015,
-          "y": 504
+          "x": 974,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -1110,7 +1744,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 948,
+            "y": 474
+          },
+          "anchor_distance": 21.84,
+          "pad_boundary_point": {
+            "x": 969,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 969,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -1137,7 +1787,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 941,
+            "y": 452
+          },
+          "anchor_distance": 8.54,
+          "pad_boundary_point": {
+            "x": 944,
+            "y": 444
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 944,
+            "y": 444
+          }
+        }
       }
     ]
   },
@@ -1164,7 +1830,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 940,
+            "y": 481
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 946,
+            "y": 503
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 946,
+            "y": 503
+          }
+        }
       }
     ]
   },
@@ -1173,14 +1855,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 866,
-          "y": 456
+          "x": 906,
+          "y": 412
         },
         "coor2": {
-          "x": 1002,
-          "y": 507
+          "x": 957,
+          "y": 548
         },
         "reconstructed_circle": {
           "center": {
@@ -1191,7 +1873,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 934,
+            "y": 480
+          },
+          "anchor_distance": 21.93,
+          "pad_boundary_point": {
+            "x": 918,
+            "y": 495
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 918,
+            "y": 495
+          }
+        }
       }
     ]
   },
@@ -1200,14 +1898,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 878,
-          "y": 451
+          "x": 926,
+          "y": 410
         },
         "coor2": {
-          "x": 1014,
-          "y": 506
+          "x": 974,
+          "y": 546
         },
         "reconstructed_circle": {
           "center": {
@@ -1218,7 +1916,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 946,
+            "y": 478
+          },
+          "anchor_distance": 22.63,
+          "pad_boundary_point": {
+            "x": 962,
+            "y": 494
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 962,
+            "y": 494
+          }
+        }
       }
     ]
   },
@@ -1227,14 +1941,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 881,
-          "y": 443
+          "x": 940,
+          "y": 407
         },
         "coor2": {
-          "x": 1015,
-          "y": 504
+          "x": 975,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -1245,7 +1959,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 948,
+            "y": 474
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 970,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 970,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -1254,14 +1984,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 864,
-          "y": 456
+          "x": 905,
+          "y": 411
         },
         "coor2": {
-          "x": 1002,
-          "y": 507
+          "x": 957,
+          "y": 549
         },
         "reconstructed_circle": {
           "center": {
@@ -1272,7 +2002,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 933,
+            "y": 480
+          },
+          "anchor_distance": 21.93,
+          "pad_boundary_point": {
+            "x": 917,
+            "y": 495
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 917,
+            "y": 495
+          }
+        }
       }
     ]
   },
@@ -1281,14 +2027,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 881,
-          "y": 443
+          "x": 941,
+          "y": 407
         },
         "coor2": {
-          "x": 1015,
-          "y": 504
+          "x": 975,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -1299,7 +2045,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 948,
+            "y": 474
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 970,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 970,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -1308,14 +2070,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 881,
-          "y": 443
+          "x": 941,
+          "y": 407
         },
         "coor2": {
-          "x": 1015,
-          "y": 504
+          "x": 975,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -1326,7 +2088,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 948,
+            "y": 474
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 970,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 970,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -1335,14 +2113,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 863,
-          "y": 443
+          "x": 904,
+          "y": 407
         },
         "coor2": {
-          "x": 997,
-          "y": 504
+          "x": 938,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -1353,7 +2131,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 930,
+            "y": 474
+          },
+          "anchor_distance": 21.84,
+          "pad_boundary_point": {
+            "x": 909,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 909,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -1362,14 +2156,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 863,
-          "y": 443
+          "x": 904,
+          "y": 407
         },
         "coor2": {
-          "x": 997,
-          "y": 504
+          "x": 938,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -1380,7 +2174,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 930,
+            "y": 474
+          },
+          "anchor_distance": 21.84,
+          "pad_boundary_point": {
+            "x": 909,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 909,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -1389,14 +2199,14 @@
     "anomalies": [
       {
         "id": 0,
-        "direction": "horizontal",
+        "direction": "vertical",
         "coor1": {
-          "x": 881,
-          "y": 443
+          "x": 940,
+          "y": 407
         },
         "coor2": {
-          "x": 1015,
-          "y": 504
+          "x": 975,
+          "y": 541
         },
         "reconstructed_circle": {
           "center": {
@@ -1407,7 +2217,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 948,
+            "y": 474
+          },
+          "anchor_distance": 22.8,
+          "pad_boundary_point": {
+            "x": 970,
+            "y": 480
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 970,
+            "y": 480
+          }
+        }
       }
     ]
   },
@@ -1434,7 +2260,20 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "reconstructed_extent",
+          "anomaly_center": {
+            "x": 956,
+            "y": 527
+          },
+          "anchor_distance": 5.83,
+          "pad_boundary_point": {
+            "x": 959,
+            "y": 522
+          },
+          "pad_center": null,
+          "effective_reference_point": null
+        }
       }
     ]
   },
@@ -1461,7 +2300,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 939,
+            "y": 482
+          },
+          "anchor_distance": 23.0,
+          "pad_boundary_point": {
+            "x": 939,
+            "y": 505
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 939,
+            "y": 505
+          }
+        }
       }
     ]
   },
@@ -1488,7 +2343,23 @@
         },
         "confidence": "high",
         "type": "normal",
-        "debug_pad_reference": null
+        "debug_pad_reference": {
+          "direction_source": "pad_boundary",
+          "anomaly_center": {
+            "x": 956,
+            "y": 527
+          },
+          "anchor_distance": 6.0,
+          "pad_boundary_point": {
+            "x": 956,
+            "y": 521
+          },
+          "pad_center": null,
+          "effective_reference_point": {
+            "x": 956,
+            "y": 521
+          }
+        }
       }
     ]
   }

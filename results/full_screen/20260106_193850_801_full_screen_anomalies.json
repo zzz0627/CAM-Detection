@@ -3,14 +3,14 @@
   "anomalies": [
     {
       "id": 0,
-      "direction": "horizontal",
+      "direction": "vertical",
       "coor1": {
-        "x": 861,
-        "y": 439
+        "x": 903,
+        "y": 400
       },
       "coor2": {
-        "x": 997,
-        "y": 495
+        "x": 946,
+        "y": 536
       },
       "reconstructed_circle": {
         "center": {
@@ -21,7 +21,23 @@
       },
       "confidence": "high",
       "type": "normal",
-      "debug_pad_reference": null
+      "debug_pad_reference": {
+        "direction_source": "pad_boundary",
+        "anomaly_center": {
+          "x": 929,
+          "y": 468
+        },
+        "anchor_distance": 21.47,
+        "pad_boundary_point": {
+          "x": 910,
+          "y": 458
+        },
+        "pad_center": null,
+        "effective_reference_point": {
+          "x": 910,
+          "y": 458
+        }
+      }
     }
   ]
 }

@@ -21,7 +21,23 @@
       },
       "confidence": "high",
       "type": "normal",
-      "debug_pad_reference": null
+      "debug_pad_reference": {
+        "direction_source": "pad_boundary",
+        "anomaly_center": {
+          "x": 941,
+          "y": 452
+        },
+        "anchor_distance": 8.54,
+        "pad_boundary_point": {
+          "x": 944,
+          "y": 444
+        },
+        "pad_center": null,
+        "effective_reference_point": {
+          "x": 944,
+          "y": 444
+        }
+      }
     }
   ]
 }

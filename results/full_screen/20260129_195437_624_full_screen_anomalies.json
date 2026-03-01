@@ -29,7 +29,20 @@
           "aspect_ratio(266.80)"
         ]
       },
-      "debug_pad_reference": null
+      "debug_pad_reference": {
+        "direction_source": "contour_aspect",
+        "anomaly_center": {
+          "x": 1180,
+          "y": 74
+        },
+        "anchor_distance": 5.0,
+        "pad_boundary_point": {
+          "x": 1180,
+          "y": 79
+        },
+        "pad_center": null,
+        "effective_reference_point": null
+      }
     }
   ]
 }
