@@ -373,10 +373,7 @@ def determine_anomaly_direction(
     config: DetectorConfig = CONFIG,
 ):
     """
-    重构后的方向判定逻辑：
-    1. 优先使用最近铜边界锚点，避免圆形结构缺失时全部回退到固定方向。
-    2. 次优使用焊盘圆心。
-    3. 若外部参考无效，则退化到几何形状推断，而不是写死默认值。
+    优先使用最近铜边界锚点，避免圆形结构缺失时全部回退到固定方向。次优使用焊盘圆心。若外部参考无效，则退化到几何形状推断。
     """
     anomaly_cx, anomaly_cy = candidate["circle_center"]
 
