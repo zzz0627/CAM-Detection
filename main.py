@@ -72,6 +72,10 @@ class DetectorConfig:
     pad_affinity_min_pixels: float = 8.0
     structure_near_ratio: float = 1.2
 
+    direction_anchor_gradient_kernel_size: int = 3
+    direction_min_reference_distance_pixels: float = 6.0
+    direction_min_anisotropy_pixels: float = 3.0
+
     operation_box_expand_ratio: float = 2.5
     operation_box_padding_pixels: int = 4
     minimum_box_side_pixels: int = 4
@@ -298,6 +302,21 @@ def build_soft_pad_mask(target_pad_mask: np.ndarray, config: DetectorConfig) -> 
     return cv2.dilate(target_pad_mask, dilate_kernel, iterations=config.pad_soft_dilate_iterations)
 
 
+def build_direction_anchor_mask(target_pad_mask: np.ndarray, config: DetectorConfig) -> np.ndarray:
+    """
+    从红铜掩膜提取边界锚点，方向判断优先参考“最近铜边界”而不是焊盘圆心。
+    这样即使圆形结构检测失败，也能利用真实铜面边缘提供稳定方向基准。
+    """
+    if np.count_nonzero(target_pad_mask) == 0:
+        return target_pad_mask.copy()
+
+    gradient_kernel = build_kernel(config.direction_anchor_gradient_kernel_size)
+    anchor_mask = cv2.morphologyEx(target_pad_mask, cv2.MORPH_GRADIENT, gradient_kernel)
+    if np.count_nonzero(anchor_mask) == 0:
+        return target_pad_mask.copy()
+    return anchor_mask
+
+
 def is_likely_interface_element(contour: np.ndarray, img_shape, interface_mask: np.ndarray) -> bool:
     """基于位置、形状和界面区域重叠度判定是否为界面元素。"""
     h, w = img_shape[:2]
@@ -333,22 +352,77 @@ def find_nearest_pad_center(point, circular_centers):
     return best_center
 
 
-def determine_anomaly_direction(anomaly_center, pad_center) -> str:
-    """根据异常圆心相对焊盘圆心的位置，决定主轴扩展方向。"""
-    if pad_center is None:
-        return "horizontal"
+def find_nearest_mask_point(point, mask_points: np.ndarray):
+    """在预提取的掩膜像素集合中查找最近锚点。"""
+    if mask_points.size == 0:
+        return None, float("inf")
 
-    anomaly_cx, anomaly_cy = anomaly_center
-    pad_cx, pad_cy = pad_center
-    dx = anomaly_cx - pad_cx
-    dy = anomaly_cy - pad_cy
+    point_xy = np.array([point[0], point[1]], dtype=np.float32)
+    points_xy = mask_points[:, ::-1].astype(np.float32)
+    deltas = points_xy - point_xy
+    distances_sq = np.sum(deltas * deltas, axis=1)
+    nearest_index = int(np.argmin(distances_sq))
+    nearest_point = points_xy[nearest_index]
+    return (int(nearest_point[0]), int(nearest_point[1])), float(np.sqrt(distances_sq[nearest_index]))
 
-    angle_deg = np.degrees(np.arctan2(dy, dx))
-    abs_angle = abs(angle_deg)
 
-    if abs_angle < 45 or abs_angle > 135:
-        return "vertical"
-    return "horizontal"
+def determine_anomaly_direction(
+    candidate: dict,
+    direction_anchor_point=None,
+    pad_center=None,
+    config: DetectorConfig = CONFIG,
+):
+    """
+    重构后的方向判定逻辑：
+    1. 优先使用最近铜边界锚点，避免圆形结构缺失时全部回退到固定方向。
+    2. 次优使用焊盘圆心。
+    3. 若外部参考无效，则退化到几何形状推断，而不是写死默认值。
+    """
+    anomaly_cx, anomaly_cy = candidate["circle_center"]
+
+    if direction_anchor_point is not None:
+        ref_cx, ref_cy = direction_anchor_point
+        dx = anomaly_cx - ref_cx
+        dy = anomaly_cy - ref_cy
+        reference_distance = float(np.hypot(dx, dy))
+
+        if reference_distance >= config.direction_min_reference_distance_pixels:
+            if abs(dx) >= abs(dy):
+                return "vertical", "pad_boundary", direction_anchor_point
+            return "horizontal", "pad_boundary", direction_anchor_point
+
+    if pad_center is not None:
+        pad_cx, pad_cy = pad_center
+        dx = anomaly_cx - pad_cx
+        dy = anomaly_cy - pad_cy
+        reference_distance = float(np.hypot(dx, dy))
+
+        if reference_distance >= config.direction_min_reference_distance_pixels:
+            if abs(dx) >= abs(dy):
+                return "vertical", "pad_center", pad_center
+            return "horizontal", "pad_center", pad_center
+
+    min_x, max_x, min_y, max_y = candidate["contour_bounds"]
+    contour_width = max_x - min_x
+    contour_height = max_y - min_y
+    width_height_delta = contour_width - contour_height
+
+    if abs(width_height_delta) >= config.direction_min_anisotropy_pixels:
+        if width_height_delta >= 0:
+            return "horizontal", "contour_aspect", None
+        return "vertical", "contour_aspect", None
+
+    # 当轮廓接近方形时，观察重构圆心到边界的有效跨度，选择占用更大的轴作为主扩展轴。
+    left_span = anomaly_cx - min_x
+    right_span = max_x - anomaly_cx
+    top_span = anomaly_cy - min_y
+    bottom_span = max_y - anomaly_cy
+    horizontal_span = max(left_span, right_span)
+    vertical_span = max(top_span, bottom_span)
+
+    if horizontal_span >= vertical_span:
+        return "horizontal", "reconstructed_extent", None
+    return "vertical", "reconstructed_extent", None
 
 
 def contour_bounds(contour: np.ndarray):
@@ -579,6 +653,8 @@ def _extract_blue_regions_x_range_impl(image_path, output_dir=None, debug=False,
 
     target_pad_mask = get_target_pad_mask(img, circular_centers, config)
     soft_pad_mask = build_soft_pad_mask(target_pad_mask, config)
+    direction_anchor_mask = build_direction_anchor_mask(target_pad_mask, config)
+    direction_anchor_points = np.column_stack(np.where(direction_anchor_mask > 0))
 
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     cyan_mask = build_hsv_mask(hsv, config.cyan_hsv_ranges)
@@ -749,8 +825,16 @@ def _extract_blue_regions_x_range_impl(image_path, output_dir=None, debug=False,
             print("输出单个有效候选。")
 
     for index, candidate in enumerate(selected_candidates):
+        nearest_anchor_point, nearest_anchor_distance = find_nearest_mask_point(
+            candidate["circle_center"], direction_anchor_points
+        )
         nearest_pad = find_nearest_pad_center(candidate["circle_center"], circular_centers)
-        direction = determine_anomaly_direction(candidate["circle_center"], nearest_pad)
+        direction, direction_source, effective_reference_point = determine_anomaly_direction(
+            candidate=candidate,
+            direction_anchor_point=nearest_anchor_point,
+            pad_center=nearest_pad,
+            config=config,
+        )
         x1, y1, x2, y2 = build_operation_rectangle(candidate, direction, img.shape, config)
 
         anomaly_info = {
@@ -788,17 +872,32 @@ def _extract_blue_regions_x_range_impl(image_path, output_dir=None, debug=False,
             }
 
         if debug_enabled:
-            anomaly_info["debug_pad_reference"] = (
-                {
-                    "pad_center": {"x": nearest_pad[0], "y": nearest_pad[1]},
-                    "anomaly_center": {
-                        "x": candidate["circle_center"][0],
-                        "y": candidate["circle_center"][1],
-                    },
-                }
-                if nearest_pad
-                else None
-            )
+            debug_reference = {
+                "direction_source": direction_source,
+                "anomaly_center": {
+                    "x": candidate["circle_center"][0],
+                    "y": candidate["circle_center"][1],
+                },
+                "anchor_distance": round(nearest_anchor_distance, 2)
+                if np.isfinite(nearest_anchor_distance)
+                else "inf",
+                "pad_boundary_point": (
+                    {"x": nearest_anchor_point[0], "y": nearest_anchor_point[1]}
+                    if nearest_anchor_point
+                    else None
+                ),
+                "pad_center": (
+                    {"x": nearest_pad[0], "y": nearest_pad[1]}
+                    if nearest_pad
+                    else None
+                ),
+                "effective_reference_point": (
+                    {"x": effective_reference_point[0], "y": effective_reference_point[1]}
+                    if effective_reference_point
+                    else None
+                ),
+            }
+            anomaly_info["debug_pad_reference"] = debug_reference
 
         result["anomalies"].append(anomaly_info)
 
@@ -808,6 +907,7 @@ def _extract_blue_regions_x_range_impl(image_path, output_dir=None, debug=False,
 
         save_debug_mask(output_path, img_name, "pad_mask_filled", soft_pad_mask)
         save_debug_mask(output_path, img_name, "blue_mask_filtered", affinity_filtered_blue_mask)
+        save_debug_mask(output_path, img_name, "direction_anchor_mask", direction_anchor_mask)
 
         debug_img = img.copy()
 

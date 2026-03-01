@@ -132,7 +132,7 @@ upper_blue2 = np.array([110, 255, 255])
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│  软约束替代硬相交 + 外接圆重构 + 正交轴边界继承 + Cyan 专项调优  │
+│  软约束替代硬相交 + 外接圆重构 + 铜边界锚点定向 + 正交轴边界继承 + Cyan 调优  │
 └────────────────────────────────────────────────────────────┘
                               │
        ┌──────────────────────┼──────────────────────┐
@@ -172,7 +172,7 @@ graph TD
     Fallback --> Selected
 
     Selected --> Circle[cv2.minEnclosingCircle 外接圆重构]
-    Circle --> Direction[方向判断: arctan2 象限]
+    Circle --> Direction[方向判断: 铜边界锚点 -> 焊盘圆心 -> 几何兜底]
     Direction --> Box[正交轴边界继承生成操作框]
     Box --> Output[JSON 输出]
 ```
@@ -307,6 +307,37 @@ def build_operation_rectangle(candidate, direction, img_shape, config):
 | horizontal | `coor1(120, 350)` → `coor2(480, 350)` | `coor1(120, 346)` → `coor2(480, 358)` | ❌ 线段 → ✅ 矩形 |
 | vertical | `coor1(300, 120)` → `coor2(300, 520)` | `coor1(286, 120)` → `coor2(314, 520)` | ❌ 线段 → ✅ 矩形 |
 
+#### 2.3 对比上一版 `main.py`：方向判断从单一圆心升级为多级参考
+
+上一版 `main.py` 的 `determine_anomaly_direction()` 只有一层外部参考：如果能找到焊盘圆心，就按“异常圆心相对焊盘圆心”的位置判断方向；如果找不到，则直接回退到固定默认值。当前版本改成了**多级决策链**，方向稳定性明显更高：
+
+```python
+# 当前 main.py — 多级方向判定入口
+nearest_anchor_point, nearest_anchor_distance = find_nearest_mask_point(
+    candidate["circle_center"], direction_anchor_points
+)
+direction, direction_source, effective_reference_point = determine_anomaly_direction(
+    candidate=candidate,
+    direction_anchor_point=nearest_anchor_point,
+    pad_center=nearest_pad,
+    config=config,
+)
+```
+
+```python
+# 当前 main.py — determine_anomaly_direction() 的核心优先级
+1. pad_boundary         -> 优先使用最近红铜边界锚点
+2. pad_center           -> 次优使用焊盘圆心
+3. contour_aspect       -> 无可靠外部参考时按轮廓宽高差推断
+4. reconstructed_extent -> 近方形轮廓时按圆心到边界跨度兜底
+```
+
+关键增量点：
+- 新增 `build_direction_anchor_mask()`，对 `target_pad_mask` 做形态学梯度，提取红铜边界作为方向锚点
+- 新增 `direction_min_reference_distance_pixels = 6.0`，避免参考点离异常中心过近时产生抖动判断
+- 新增 `direction_min_anisotropy_pixels = 3.0`，当轮廓近似方形时不再误用宽高比微小噪声
+- 即使圆形结构检测失败，也能通过红铜边界或轮廓几何继续输出稳定方向，而不是退化到写死默认值
+
 ---
 
 ### Task 3：引入外接圆重构与 Cyan 专项 HSV 调优
@@ -359,7 +390,7 @@ cv2.minEnclosingCircle(contour)
       │ 得到理想圆 (cx, cy, r)
       ├──→ 距离场查询坐标：pad_distance_map[cy, cx]
       ├──→ 焊盘距离计算：dist(圆心, 焊盘中心)
-      ├──→ 方向判断：arctan2(dy, dx) 基于圆心
+      ├──→ 方向判断：铜边界锚点优先，其次焊盘圆心，最后几何兜底
       └──→ 操作框生成：以 2r 为原始直径 × 2.5 外推（替代残缺 Bounding Box）
 ```
 
@@ -392,6 +423,10 @@ class DetectorConfig:
     # Cyan 形态学
     cyan_open_kernel_size: int = 3
     cyan_close_kernel_size: int = 5
+
+    # 方向判定
+    direction_min_reference_distance_pixels: float = 6.0
+    direction_min_anisotropy_pixels: float = 3.0
 
     # 操作框生成
     operation_box_expand_ratio: float = 2.5   # 2.5 倍外推
@@ -430,41 +465,50 @@ def extract_blue_regions_x_range(image_path, output_dir=None, debug=False, confi
 
 ## 五、技术实现细节
 
-### 5.1 方向判断数学原理
+### 5.1 方向判断流程（已从上一版 `arctan2` 单点判定升级）
 
 ```python
-# main.py — determine_anomaly_direction()
-dx = anomaly_cx - pad_cx
-dy = anomaly_cy - pad_cy
-angle_deg = np.degrees(np.arctan2(dy, dx))
-abs_angle  = abs(angle_deg)
-
-if abs_angle < 45 or abs_angle > 135:
-    return "vertical"   # 左右侧 → 主轴 Y 扩展
-return "horizontal"     # 上下侧 → 主轴 X 扩展
+# main.py — 当前版本入口
+nearest_anchor_point, nearest_anchor_distance = find_nearest_mask_point(
+    candidate["circle_center"], direction_anchor_points
+)
+direction, direction_source, effective_reference_point = determine_anomaly_direction(
+    candidate=candidate,
+    direction_anchor_point=nearest_anchor_point,
+    pad_center=nearest_pad,
+    config=config,
+)
 ```
 
-**象限划分图**：
+```python
+# main.py — determine_anomaly_direction() 的主逻辑（节选）
+if direction_anchor_point is not None and reference_distance >= 6:
+    return "vertical" if abs(dx) >= abs(dy) else "horizontal", "pad_boundary", direction_anchor_point
 
+if pad_center is not None and reference_distance >= 6:
+    return "vertical" if abs(dx) >= abs(dy) else "horizontal", "pad_center", pad_center
+
+if abs(contour_width - contour_height) >= 3:
+    return ("horizontal", "contour_aspect", None) if contour_width >= contour_height else ("vertical", "contour_aspect", None)
+
+return ("horizontal", "reconstructed_extent", None) if horizontal_span >= vertical_span else ("vertical", "reconstructed_extent", None)
 ```
-             上侧 (-135° ~ -45°)
-             → horizontal（X 轴扩展）
-                    │
-左侧 ←──── (−180°/180°) ───→ 右侧
-vertical              0°          vertical
-（Y 轴扩展）           │          （Y 轴扩展）
-                    下侧 (45° ~ 135°)
-                    → horizontal（X 轴扩展）
-```
 
-**角度与方向映射表**：
+**当前版本的判定顺序**：
 
-| 角度范围 | 象限 | 方向输出 | 主轴 |
-|:-------:|:---:|:-------:|:---:|
-| -45° ~ 45° | 右侧 | `vertical` | Y 轴 × 2.5 |
-| 45° ~ 135° | 下侧 | `horizontal` | X 轴 × 2.5 |
-| 135° ~ 180° 或 -180° ~ -135° | 左侧 | `vertical` | Y 轴 × 2.5 |
-| -135° ~ -45° | 上侧 | `horizontal` | X 轴 × 2.5 |
+| 优先级 | `direction_source` | 触发条件 | 判定依据 |
+|:---:|:---:|:---:|:---:|
+| 1 | `pad_boundary` | 最近红铜边界锚点存在，且参考距离 ≥ 6px | 比较异常圆心相对锚点的 `abs(dx)` / `abs(dy)` |
+| 2 | `pad_center` | 焊盘圆心存在，且参考距离 ≥ 6px | 比较异常圆心相对焊盘圆心的 `abs(dx)` / `abs(dy)` |
+| 3 | `contour_aspect` | 无可靠外部参考，且宽高差 ≥ 3px | 轮廓宽高差决定主轴 |
+| 4 | `reconstructed_extent` | 轮廓近似方形 | 比较重构圆心到左右/上下边界的有效跨度 |
+
+**方向语义保持不变**：
+
+| `direction` | 主轴 | 操作框行为 |
+|:---:|:---:|:---:|
+| `horizontal` | X 轴 | 沿 X 轴按重构圆直径做 2.5 倍外推 |
+| `vertical` | Y 轴 | 沿 Y 轴按重构圆直径做 2.5 倍外推 |
 
 ---
 
@@ -607,8 +651,12 @@ if x2 - x1 < min_side:
       "confidence": "high",
       "type": "normal",
       "debug_pad_reference": {
+        "direction_source": "pad_boundary",
+        "anomaly_center": { "x": 300, "y": 330 },
+        "anchor_distance": 18.44,
+        "pad_boundary_point": { "x": 282, "y": 328 },
         "pad_center": { "x": 295, "y": 310 },
-        "anomaly_center": { "x": 300, "y": 330 }
+        "effective_reference_point": { "x": 282, "y": 328 }
       }
     }
   ]
@@ -627,8 +675,19 @@ if x2 - x1 < min_side:
 | `reconstructed_circle.radius` | float | 外接圆半径（像素） | **新增** |
 | `confidence` | string | `"high"` / `"low"` / `"very_low"` | 不变 |
 | `type` | string | `"normal"` / `"fallback"` / `"default_region"` | 不变 |
-| `debug_pad_reference` | object | 焊盘参考坐标（仅 debug 模式） | 不变 |
+| `debug_pad_reference` | object | 方向判定参考信息（仅 debug 模式） | **扩充** |
 | `debug_info` | object | 过滤诊断信息（仅 fallback 时输出） | 扩充 |
+
+**`debug_pad_reference` 子字段（当前版新增方向来源信息）**：
+
+| 字段 | 类型 | 说明 |
+|:---:|:---:|:---:|
+| `direction_source` | string | 本次方向判定命中的参考层级：`pad_boundary` / `pad_center` / `contour_aspect` / `reconstructed_extent` |
+| `anomaly_center` | object | 当前异常的重构圆心 `{x, y}` |
+| `anchor_distance` | float / "inf" | 异常圆心到最近红铜边界锚点的距离 |
+| `pad_boundary_point` | object / null | 最近红铜边界锚点 |
+| `pad_center` | object / null | 最近焊盘圆心 |
+| `effective_reference_point` | object / null | 实际参与本次方向判断的参考点 |
 
 **`debug_info` 子字段（新增 pad/结构距离）**：
 
@@ -668,6 +727,7 @@ for anomaly in result["anomalies"]:
 | `id`, `coor1`, `coor2`, `confidence`, `type` | 完全兼容，结构不变 |
 | `direction` | 已存在，语义不变 |
 | `reconstructed_circle` | 新增，旧端用 `.get()` 可安全忽略 |
+| `debug_pad_reference.direction_source` / `.anchor_distance` 等 | 新增子字段，旧端忽略 |
 | `debug_info.pad_distance` / `.structure_distance_ratio` | 新增子字段，旧端忽略 |
 
 ---
@@ -719,6 +779,7 @@ python main.py TrainData/ --output anomaly_results --debug
 | `{name}_contours_debug.jpg` | 原图 + 重构圆（青色）+ 操作框（蓝色）+ 焊盘圆（黄色） |
 | `{name}_pad_mask_filled.jpg` | 软约束焊盘掩膜（超大膨胀后） |
 | `{name}_blue_mask_filtered.jpg` | 通过亲和度过滤的青色候选掩膜 |
+| `{name}_direction_anchor_mask.jpg` | 红铜边界锚点掩膜（用于方向判定） |
 | `blue_anomalies_summary.json` | 全批次汇总 JSON |
 
 ### 8.4 参数调优指南
@@ -728,17 +789,19 @@ python main.py TrainData/ --output anomaly_results --debug
 1. **漏检青色区域**：调低 `cyan_hsv_ranges` 的 S/V 下限（当前为 40）
 2. **焊盘亲和度过于严格**：调大 `pad_affinity_radius_ratio`（当前 0.90）或 `pad_affinity_min_pixels`（当前 8）
 3. **黑洞弥合不足**：调大 `pad_soft_dilate_kernel_size`（当前 25）
-4. **操作框过大/过小**：调整 `operation_box_expand_ratio`（当前 2.5）
+4. **方向偶发抖动或误判**：调整 `direction_min_reference_distance_pixels`（当前 6）或 `direction_min_anisotropy_pixels`（当前 3）
+5. **操作框过大/过小**：调整 `operation_box_expand_ratio`（当前 2.5）
 
 ---
 
 ## 九、总结
 
-### 三大核心修复
+### 四项核心修复
 
 | 问题 | 原症状 | 修复方案 | 关键代码位置 |
 |:---:|:---:|:---:|:---:|
 | 布尔逻辑死锁 | 青色目标被 AND 操作完全抹除 | 废除硬相交，改用软约束距离场 | `build_soft_pad_mask()` / `pad_distance_map` |
+| 方向参考单一 | 焊盘圆缺失时易退化到固定方向，方向抖动明显 | 铜边界锚点优先 + 焊盘圆心次优 + 几何兜底 | `build_direction_anchor_mask()` / `determine_anomaly_direction()` |
 | 坐标轴塌陷 | 输出零面积线段，API 崩溃 | 正交轴边界继承 + 副轴 Padding | `build_operation_rectangle()` |
 | 残缺标记失真 | 碎片重心/尺寸偏离，框偏小 | `cv2.minEnclosingCircle` 外接圆重构 | 逐轮廓分析循环 |
 
@@ -747,4 +810,5 @@ python main.py TrainData/ --output anomaly_results --debug
 - **DetectorConfig**：所有超参数集中管理，消除散落魔法数字
 - **异常隔离**：顶层 `try/except` 确保单张图像失败不中断批量任务
 - **保底分层**：正常 → Fallback 候选池 → 默认区域 → 应急兜底，四级降级
+- **方向可解释性**：`debug_pad_reference.direction_source` 可直接追踪本次方向来自铜边界、焊盘圆心还是几何兜底
 - **`reconstructed_circle` 输出**：让下游设备可以直接使用物理圆心精准对位，无需二次推算
